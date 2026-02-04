@@ -9,7 +9,7 @@ function generateQR() {
   downloadBtn.style.display = "none";
 
   if (!text) {
-    qrDiv.textContent = "Please enter something";
+    qrDiv.innerText = "Please enter text or a link";
     return;
   }
 
@@ -19,9 +19,9 @@ function generateQR() {
   QRCode.toCanvas(qrCanvas, text, {
     width: 220,
     margin: 2
-  }, function (error) {
-    if (error) {
-      qrDiv.textContent = "Failed to generate QR";
+  }, function (err) {
+    if (err) {
+      qrDiv.innerText = "Failed to generate QR";
     } else {
       downloadBtn.style.display = "inline-block";
     }
@@ -31,6 +31,6 @@ function generateQR() {
 function downloadQR() {
   const link = document.createElement("a");
   link.download = "qr-code.png";
-  link.href = qrCanvas.toDataURL();
+  link.href = qrCanvas.toDataURL("image/png");
   link.click();
 }
