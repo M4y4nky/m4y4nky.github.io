@@ -1,33 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Code Generator</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
+  <div class="wrapper">
     <h1>QR Code Generator</h1>
-    <p class="subtitle">
-      Generate and download QR codes instantly
-    </p>
+    <p class="subtitle">Generate and download QR codes instantly</p>
 
-    <input id="text" placeholder="Enter text or URL" />
-
-    <button class="primary" onclick="generateQR()">
-      Generate QR Code
-    </button>
+    <div class="input-group">
+      <input id="text" placeholder="Enter text or URL">
+      <button onclick="generateQR()">Generate</button>
+    </div>
 
     <div id="qr"></div>
 
-    <button
-      id="download"
-      class="secondary"
-      style="display:none"
-      onclick="downloadQR()">
-      Download PNG
-    </button>
+    <button id="download" onclick="downloadQR()">Download PNG</button>
 
     <p class="privacy">
       QR codes are generated locally. No data is stored.
