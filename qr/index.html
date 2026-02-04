@@ -11,11 +11,21 @@
   <p>Enter any text or link to generate a QR code</p>
 
   <input id="text" placeholder="Enter text or URL" />
+  <br><br>
   <button onclick="generateQR()">Generate QR</button>
 
   <div id="qr"></div>
-  <button id="download" style="display:none" onclick="downloadQR()">Download QR</button>
 
+  <br>
+  <button id="download" style="display:none" onclick="downloadQR()">
+    Download QR
+  </button>
+
+  <!-- QR CODE LIBRARY (ENGINE) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <!-- YOUR SCRIPT -->
   <script src="script.js"></script>
+
 </body>
 </html>
