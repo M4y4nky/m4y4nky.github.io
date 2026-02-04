@@ -1,51 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Code Generator</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="card">
-  <div class="top">
+  <main class="container">
     <h1>QR Code Generator</h1>
-    <button id="toggle">🌙</button>
-  </div>
+    <p class="subtitle">Instant, simple and free</p>
 
-  <input id="text" placeholder="Text or URL" />
+    <input
+      id="text"
+      placeholder="Enter text or URL"
+      autofocus
+    >
 
-  <div class="row">
-    <label>QR Size</label>
-    <input type="range" id="size" min="150" max="300" value="220">
-  </div>
+    <div id="qr"></div>
 
-  <div class="row">
-    <label>QR Color</label>
-    <input type="color" id="color" value="#000000">
-  </div>
+    <button id="download">Download PNG</button>
 
-  <div class="row">
-    <label>Background</label>
-    <input type="color" id="bg" value="#ffffff">
-  </div>
+    <p class="privacy">
+      Generated locally. No data stored.
+    </p>
+  </main>
 
-  <div class="row">
-    <label>Center Logo (optional)</label>
-    <input type="file" id="logo" accept="image/*">
-  </div>
-
-  <div id="qr"></div>
-
-  <button id="download" onclick="downloadQR()">Download PNG</button>
-
-  <p class="privacy">
-    Generated locally. No data stored.
-  </p>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
