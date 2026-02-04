@@ -7,24 +7,35 @@
 </head>
 <body>
 
-  <h1>QR Code Generator</h1>
-  <p>Enter any text or link to generate a QR code</p>
+  <div class="container">
+    <h1>QR Code Generator</h1>
+    <p class="subtitle">
+      Generate and download QR codes instantly
+    </p>
 
-  <input id="text" placeholder="Enter text or URL" />
-  <br><br>
-  <button onclick="generateQR()">Generate QR</button>
+    <input id="text" placeholder="Enter text or URL" />
 
-  <div id="qr"></div>
+    <button class="primary" onclick="generateQR()">
+      Generate QR Code
+    </button>
 
-  <br>
-  <button id="download" style="display:none" onclick="downloadQR()">
-    Download QR
-  </button>
+    <div id="qr"></div>
 
-  <!-- QR CODE LIBRARY (ENGINE) -->
+    <button
+      id="download"
+      class="secondary"
+      style="display:none"
+      onclick="downloadQR()">
+      Download PNG
+    </button>
+
+    <p class="privacy">
+      QR codes are generated locally. No data is stored.
+    </p>
+  </div>
+
+  <!-- QR engine -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
-  <!-- YOUR SCRIPT -->
   <script src="script.js"></script>
 
 </body>
