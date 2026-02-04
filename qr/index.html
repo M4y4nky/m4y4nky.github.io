@@ -8,25 +8,25 @@
 </head>
 <body>
 
-  <div class="wrapper">
+  <div class="card">
     <h1>QR Code Generator</h1>
     <p class="subtitle">Generate and download QR codes instantly</p>
 
-    <div class="input-group">
-      <input id="text" placeholder="Enter text or URL">
-      <button onclick="generateQR()">Generate</button>
-    </div>
+    <input id="text" placeholder="Enter text or URL">
+
+    <button class="generate" onclick="generateQR()">Generate QR</button>
 
     <div id="qr"></div>
 
-    <button id="download" onclick="downloadQR()">Download PNG</button>
+    <button id="download" class="download" onclick="downloadQR()">
+      Download PNG
+    </button>
 
     <p class="privacy">
       QR codes are generated locally. No data is stored.
     </p>
   </div>
 
-  <!-- QR engine -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="script.js"></script>
 
