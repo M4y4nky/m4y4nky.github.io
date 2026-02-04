@@ -17,13 +17,13 @@ function generateQR() {
   qrDiv.appendChild(qrCanvas);
 
   QRCode.toCanvas(qrCanvas, text, {
-    width: 220,
+    width: 200,
     margin: 2
-  }, function (err) {
+  }, (err) => {
     if (err) {
       qrDiv.innerText = "Failed to generate QR";
     } else {
-      downloadBtn.style.display = "inline-block";
+      downloadBtn.style.display = "block";
     }
   });
 }
