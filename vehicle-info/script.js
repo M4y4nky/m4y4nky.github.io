@@ -1,40 +1,26 @@
-body {
-  background: #0f172a;
-  color: #e5e7eb;
-  font-family: Arial, sans-serif;
-}
+const form = document.getElementById("vehicleForm");
+const result = document.getElementById("result");
 
-.container {
-  max-width: 500px;
-  margin: 80px auto;
-  padding: 20px;
-  background: #020617;
-  border-radius: 10px;
-}
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-h1 {
-  text-align: center;
-}
+  const vehicleNo = document.getElementById("vehicleNo").value.trim();
+  result.textContent = "Fetching data...";
 
-input {
-  width: 100%;
-  padding: 12px;
-  margin: 15px 0;
-  font-size: 16px;
-}
+  try {
+    const res = await fetch(
+      "https://m4y4nky-m4y4nky-confess-api.vercel.app/api/vehicle",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vehicle_no: vehicleNo })
+      }
+    );
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: #22c55e;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
+    const data = await res.json();
+    result.textContent = JSON.stringify(data, null, 2);
 
-pre {
-  margin-top: 20px;
-  background: #020617;
-  padding: 10px;
-  overflow-x: auto;
-}
+  } catch (err) {
+    result.textContent = "Error fetching data";
+  }
+});
