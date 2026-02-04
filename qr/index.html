@@ -8,23 +8,21 @@
 </head>
 <body>
 
-  <main class="container">
-    <h1>QR Code Generator</h1>
-    <p class="subtitle">Instant, simple and free</p>
+  <main class="page">
+    <section class="card">
+      <h1>QR Code Generator</h1>
+      <p class="subtitle">Instant, simple and free</p>
 
-    <input
-      id="text"
-      placeholder="Enter text or URL"
-      autofocus
-    >
+      <input id="text" placeholder="Enter text or URL" />
 
-    <div id="qr"></div>
+      <div id="qr"></div>
 
-    <button id="download">Download PNG</button>
+      <button id="download">Download PNG</button>
 
-    <p class="privacy">
-      Generated locally. No data stored.
-    </p>
+      <p class="privacy">
+        Generated locally. No data stored.
+      </p>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
