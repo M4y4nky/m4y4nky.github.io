@@ -48,12 +48,10 @@
     </div>
 
     <script>
-        // Updated with Random Sample Data
         function updateHint() {
             const cmd = document.getElementById('api_cmd').value;
             const input = document.getElementById('api_query');
             const hint = document.getElementById('input-hint');
-            
             const hints = {
                 "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
                 "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
@@ -66,7 +64,6 @@
                 "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com" },
                 "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889" }
             };
-
             input.placeholder = hints[cmd].p;
             hint.innerText = hints[cmd].h;
         }
@@ -76,7 +73,7 @@
             "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
             "dob": "📅", "gender": "🚻", "username": "📛", "bio": "📝", 
-            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤", "totalposts": "📄"
+            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤"
         };
 
         const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input"];
@@ -92,7 +89,6 @@
             const img = document.getElementById('p-img');
             
             if(!q) return alert("Bhai, data toh daalo!");
-            
             img.style.display = "none";
             display.innerHTML = `<div style="color:#888">🔍 Scanning secure terminal...</div>`;
             
@@ -106,9 +102,10 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        let lowerKey = key.toLowerCase();
+                        // Cleaning the key name from emojis or extra spaces
+                        let cleanKeyName = key.replace(/[^\w\s]/gi, '').trim().toLowerCase();
 
-                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profile_pic") || lowerKey.includes("profileimage")) {
+                        if (cleanKeyName.includes("imagebase64") || cleanKeyName.includes("profilepic")) {
                             if (val && val.length > 50) {
                                 img.src = val;
                                 img.style.display = "block";
@@ -116,16 +113,19 @@
                             continue;
                         }
 
-                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
+                        if (hiddenKeys.includes(cleanKeyName) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
                             continue;
                         }
 
                         if (val && typeof val === 'object') {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
-                            let emoji = emojiMap[lowerKey] || "🔹";
-                            let cleanKey = key.replace(/_/g, ' ').toUpperCase();
-                            html += `<b>${emoji} ${cleanKey}:</b> <span style="color:white">${val}</span><br>`;
+                            // Smart ID check for 🆔 ID or raw ID
+                            let emoji = emojiMap[cleanKeyName] || "🔹";
+                            if (cleanKeyName === "id") emoji = "🆔";
+                            
+                            let displayKey = key.toUpperCase();
+                            html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
                         }
                     }
                     return html;
