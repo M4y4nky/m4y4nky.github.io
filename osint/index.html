@@ -7,267 +7,268 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-:root{
---bg:#0c0c0c;
---win:#000;
---text:#ffffff;
---dim:#555555;
---border:#333333;
---cmd:#00ff41;
---header:#1a1a1a;
+html,body{
+margin:0;
+height:100%;
+background:radial-gradient(circle at top,#1a1a1a 0%,#0c0c0c 70%);
+font-family:ui-monospace,Menlo,monospace;
+overflow:hidden;
 }
 
-body.light-mode{
---bg:#f0f0f0;
---win:#ffffff;
---text:#000000;
---dim:#999999;
---border:#cccccc;
---cmd:#0a7a2c;
---header:#e5e5e5;
-}
-
-body{
-background:var(--bg);
-color:var(--text);
-font-family:ui-monospace, Menlo, monospace;
+.wrapper{
+height:100dvh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:16px;
 }
 
 .terminal{
-background:var(--win);
-border:1px solid var(--border);
-box-shadow:0 20px 60px rgba(0,0,0,.5);
+width:100%;
+max-width:820px;
+height:100%;
+max-height:850px;
+background:#000;
+border-radius:16px;
+border:1px solid #222;
+box-shadow:0 40px 100px rgba(0,0,0,.7);
+display:flex;
+flex-direction:column;
+overflow:hidden;
 }
 
+/* HEADER */
 .header{
-background:var(--header);
-border-bottom:1px solid var(--border);
-}
-
-.cmd::before{
-content:"m4y4nky@system:~$ ";
-color:var(--cmd);
-}
-
-select,input{
-background:transparent;
-border:1px solid var(--border);
-padding:6px 10px;
-color:var(--text);
+background:linear-gradient(#2b2b2b,#1d1d1d);
+padding:10px 14px;
+display:flex;
+align-items:center;
+justify-content:space-between;
 font-size:13px;
+border-bottom:1px solid #222;
 }
 
-button{
+.dots{display:flex;gap:6px;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.red{background:#ff5f56;}
+.yellow{background:#ffbd2e;}
+.green{background:#27c93f;}
+
+.console{
+flex:1;
+overflow-y:auto;
+padding:16px;
+font-size:14px;
+color:#e5e5e5;
+line-height:1.6;
+scroll-behavior:smooth;
+}
+
+.input-bar{
+display:flex;
+gap:8px;
+align-items:center;
+padding:14px;
+border-top:1px solid #222;
+background:#000;
+}
+
+.prompt{color:#00ff88;font-weight:600;}
+input{
+flex:1;
 background:transparent;
-border:1px solid var(--cmd);
-color:var(--cmd);
-padding:6px 12px;
-cursor:pointer;
+border:none;
+outline:none;
+color:#fff;
+font-family:inherit;
+font-size:14px;
 }
 
-button:hover{
-background:var(--cmd);
-color:#000;
+/* COLORS */
+.success{color:#00ff88;}
+.error{color:#ff4d4d;}
+.info{color:#4da6ff;}
+
+@media(max-width:768px){
+.wrapper{
+padding:0;
 }
 
-.output{
-border:1px solid var(--border);
+.terminal{
+border-radius:0;
+max-height:none;
+}
+
+.console{
+font-size:13px;
+padding:14px;
+}
+
+.input-bar{
 padding:12px;
-margin-top:12px;
-white-space:pre-wrap;
-font-size:13px;
 }
-
-.dim{color:var(--dim)}
+}
 </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-6">
+<body>
 
-<div class="terminal w-full max-w-4xl rounded-lg overflow-hidden">
+<div class="wrapper">
+<div class="terminal">
 
-<!-- HEADER -->
-<div class="header flex justify-between items-center px-4 py-2 text-xs">
-<div class="flex gap-2">
-<div class="w-3 h-3 bg-[#ff5f56] rounded-full"></div>
-<div class="w-3 h-3 bg-[#ffbd2e] rounded-full"></div>
-<div class="w-3 h-3 bg-[#27c93f] rounded-full"></div>
+<div class="header">
+<div class="dots">
+<div class="dot red"></div>
+<div class="dot yellow"></div>
+<div class="dot green"></div>
 </div>
 <div>M4y4nky’s OSINT</div>
-<div id="theme-toggle" class="cursor-pointer">☀️</div>
+<div class="text-gray-400 text-xs">secure mode</div>
 </div>
 
-<div class="p-6 text-sm">
-
-<p class="dim text-xs">
-Last login: <span id="time"></span> on ttys001
-</p>
-
-<!-- OSINT -->
-<div class="mt-6">
-<p class="cmd">osint-scan</p>
-
-<div class="flex flex-wrap gap-2 mt-3">
-<select id="type">
-<option value="phone">phone</option>
-<option value="github">github</option>
-<option value="telegram">telegram</option>
-</select>
-
-<input id="query" placeholder="Enter target">
-
-<button onclick="scan()">run</button>
-
-<label class="text-xs">
-<input type="checkbox" id="rawToggle"> raw
-</label>
+<div id="console" class="console">
+Type <span class="info">help</span> to begin.
 </div>
 
-<div id="output" class="output"></div>
+<div class="input-bar">
+<div class="prompt">m4y4nky@system:~$</div>
+<input id="cmd" autocomplete="off" autofocus>
 </div>
 
 </div>
 </div>
 
 <script>
-document.getElementById("time").innerText=new Date().toLocaleString();
 
-document.getElementById("theme-toggle").onclick=()=>{
-document.body.classList.toggle("light-mode");
-};
+const consoleEl=document.getElementById("console");
+const input=document.getElementById("cmd");
 
-async function scan(){
-const type=document.getElementById("type").value;
-const query=document.getElementById("query").value.trim();
-const raw=document.getElementById("rawToggle").checked;
-const out=document.getElementById("output");
+function print(text,className=""){
+const line=document.createElement("div");
+line.textContent=text;
+if(className) line.className=className;
+consoleEl.appendChild(line);
+consoleEl.scrollTop=consoleEl.scrollHeight;
+}
 
-if(!query){
-out.innerText="Enter target value";
+function validate(type,value){
+if(type==="phone" && !/^[0-9]{10}$/.test(value))
+return "Phone must be 10 digits";
+
+if(type==="telegram" && !/^[0-9]+$/.test(value))
+return "Telegram ID must be numeric";
+
+if(type==="github" && !/^[a-z0-9-]+$/.test(value))
+return "Invalid GitHub username";
+
+return null;
+}
+
+async function execute(command){
+
+command=command.trim();
+if(!command) return;
+
+print("m4y4nky@system:~$ "+command,"prompt");
+
+const parts=command.split(/\s+/);
+
+if(command==="help"){
+print("Commands:","info");
+print("phone <10digit>");
+print("telegram <id>");
+print("github <username>");
+print("clear");
 return;
 }
 
-out.innerText="Scanning...\n";
+if(command==="clear"){
+consoleEl.innerHTML="";
+return;
+}
+
+if(parts.length<2){
+print("Usage: type value","error");
+return;
+}
+
+const type=parts[0].toLowerCase();
+const value=parts[1];
+
+if(!["phone","telegram","github"].includes(type)){
+print("Unknown command","error");
+return;
+}
+
+const error=validate(type,value);
+if(error){
+print(error,"error");
+return;
+}
+
+print("Scanning...","info");
 
 try{
-
-const url=`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${encodeURIComponent(query)}`;
+const url=`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${encodeURIComponent(value)}`;
 const res=await fetch(url);
 
 if(!res.ok){
-throw new Error("Backend returned "+res.status);
+print("Server error "+res.status,"error");
+return;
 }
 
 const data=await res.json();
 
-if(raw){
-out.innerText=JSON.stringify(data,null,2);
-return;
-}
-
-/* ================= PHONE ================= */
 if(type==="phone"){
-
-if(!data.status || !data.results || data.results.length===0){
-out.innerText="No phone data found";
+if(!data.status || !data.results?.length){
+print("No phone data found","error");
 return;
 }
-
-let outputText="PHONE INTELLIGENCE\n\n";
-outputText+="Status: SUCCESS\n";
-outputText+="Profiles Found: "+data.results.length+"\n\n";
-
-data.results.forEach((p,index)=>{
-
-let cleanAddress="";
-let city="";
-let state="";
-let pincode="";
-
-if(p.address){
-let parts=p.address.replace(/!!/g,"!").split("!");
-if(parts.length>=3){
-city=parts[parts.length-3]||"";
-state=parts[parts.length-2]||"";
-pincode=parts[parts.length-1]||"";
-cleanAddress=parts.slice(0,parts.length-3).join(", ");
-}
+const p=data.results[0];
+print("PHONE INTELLIGENCE","success");
+print("Mobile: "+(p.mobile||"N/A"));
+print("Name: "+(p.name||"N/A"));
+print("Circle: "+(p.circle||"N/A"));
+print("Government ID: "+(p.id||"N/A"));
+if(p.email) print("Email: "+p.email);
 }
 
-outputText+=`--- Profile ${index+1} ---\n`;
-outputText+=`Mobile: ${p.mobile||"N/A"}\n`;
-outputText+=`Name: ${p.name||"N/A"}\n`;
-outputText+=`Father Name: ${p.fname||"N/A"}\n`;
-outputText+=`Circle: ${p.circle||"N/A"}\n`;
-outputText+=`Government ID: ${p.id||"N/A"}\n`;
-outputText+=`Alternate Number: ${p.alt||"N/A"}\n`;
-if(p.email){ outputText+=`Email: ${p.email}\n`; }
-outputText+=`Address: ${cleanAddress}\n`;
-outputText+=`City: ${city}\n`;
-outputText+=`State: ${state}\n`;
-outputText+=`Pincode: ${pincode}\n\n`;
-});
-
-out.innerText=outputText;
-}
-
-/* ================= GITHUB ================= */
 if(type==="github"){
 if(data.message==="Not Found"){
-out.innerText="GitHub user not found";
+print("GitHub user not found","error");
 return;
 }
-
-out.innerText=
-`GITHUB PROFILE
-
-Username: ${data.login}
-Name: ${data.name||"N/A"}
-Followers: ${data.followers}
-Repos: ${data.public_repos}
-Joined: ${new Date(data.created_at).toDateString()}
-Last Updated: ${new Date(data.updated_at).toDateString()}
-Profile: ${data.html_url}`;
+print("GITHUB PROFILE","success");
+print("Username: "+data.login);
+print("Repos: "+data.public_repos);
+print("Followers: "+data.followers);
 }
 
-/* ================= TELEGRAM ================= */
 if(type==="telegram"){
-
 let tg=data?.data?.data||data?.data||data;
-
 if(!tg || !tg.id){
-out.innerText="Telegram user not found";
+print("Telegram not found","error");
 return;
 }
-
-let outputText="TELEGRAM INTELLIGENCE\n\n";
-
-outputText+=`Name: ${tg.first_name||""} ${tg.last_name||""}\n`;
-outputText+=`User ID: ${tg.id}\n`;
-outputText+=`Active: ${tg.is_active}\n`;
-outputText+=`Is Bot: ${tg.is_bot}\n\n`;
-
-outputText+=`Total Groups: ${tg.total_groups||0}\n`;
-outputText+=`Admin In Groups: ${tg.adm_in_groups||0}\n`;
-outputText+=`Group Messages: ${tg.msg_in_groups_count||0}\n`;
-outputText+=`Total Messages: ${tg.total_msg_count||0}\n`;
-outputText+=`Names Count: ${tg.names_count||0}\n`;
-outputText+=`Usernames Count: ${tg.usernames_count||0}\n\n`;
-
-if(tg.first_msg_date){
-outputText+=`First Message: ${new Date(tg.first_msg_date).toLocaleString()}\n`;
-}
-if(tg.last_msg_date){
-outputText+=`Last Message: ${new Date(tg.last_msg_date).toLocaleString()}\n`;
+print("TELEGRAM INTELLIGENCE","success");
+print("Name: "+(tg.first_name||""));
+print("User ID: "+tg.id);
+print("Total Groups: "+(tg.total_groups||0));
+print("Total Messages: "+(tg.total_msg_count||0));
 }
 
-out.innerText=outputText;
+}catch(e){
+print("Error: "+e.message,"error");
+}
 }
 
-}catch(err){
-out.innerText="Error: "+err.message;
+input.addEventListener("keydown",e=>{
+if(e.key==="Enter"){
+execute(input.value);
+input.value="";
 }
-}
+});
+
 </script>
 
 </body>
