@@ -75,8 +75,8 @@
 
         const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", "followingcount": "🏃", "totalposts": "📸" };
         
-        // Blocklist for technical garbage and error fields
-        const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code"];
+        // Strict Blocklist
+        const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound"];
 
         document.addEventListener('DOMContentLoaded', () => { updateHint(); document.getElementById('search_btn').addEventListener('click', executeSearch); });
 
@@ -87,13 +87,14 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Scanning secure database...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${apiNames[cmd]} RESULTS ✨</b><br><br>`;
 
                 function renderResults(dataObj) {
+                    if (!dataObj || (dataObj.success === false)) return "";
                     if (Array.isArray(dataObj)) return dataObj.map(item => `<div class="result-item">${processData(item)}</div>`).join('');
                     if (dataObj.data && Array.isArray(dataObj.data)) return dataObj.data.map(item => `<div class="result-item">${processData(item)}</div>`).join('');
                     const single = processData(dataObj);
@@ -115,8 +116,8 @@
                             continue;
                         }
 
-                        // Block technical metadata and errors
-                        if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.includes('Failed to fetch')))) continue;
+                        // Filter metadata and error values
+                        if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('failed to fetch') || val.toLowerCase().includes('error fetching')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
@@ -131,9 +132,9 @@
                 }
 
                 const finalHtml = renderResults(data);
-                // Smart "Not Found" logic
+                // Unified "User Not Found" display
                 display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ USER NOT FOUND.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
-            } catch (e) { display.innerHTML = "<span style='color:red'>❌ Connection Error.</span>"; }
+            } catch (e) { display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>"; }
         }
     </script>
 </body>
