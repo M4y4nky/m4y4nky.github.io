@@ -70,17 +70,15 @@
             };
             
             const config = hints[cmd];
-            input.value = ""; // Clear on switch
+            input.value = "";
             input.placeholder = config.p;
             input.type = config.type;
             input.maxLength = config.max;
             hint.innerText = config.h;
 
-            // Strict numeric filter for Phone Number
             input.oninput = (e) => {
                 if (config.type === "tel" || cmd === "num") {
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    if (e.target.value.length > config.max) e.target.value = e.target.value.slice(0, config.max);
                 }
             };
         }
@@ -119,6 +117,7 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
+                        // Improved Key Cleaning: Strict Regex
                         let cleanKey = key.replace(/^[^a-zA-Z0-9]+/, '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
@@ -135,7 +134,8 @@
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            let emoji = (lowerKey === "name" || lowerKey === "fullname") ? "" : (emojiMap[lowerKey.replace(/\s+/g, '')] || "🔹");
+                            // Fixed Format for NAME: No leading dots or emojis
+                            let emoji = (lowerKey === "name" || lowerKey === "fullname") ? "🔹" : (emojiMap[lowerKey.replace(/\s+/g, '')] || "🔹");
                             html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
                             html += processData(val);
