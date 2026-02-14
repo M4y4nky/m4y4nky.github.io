@@ -75,8 +75,7 @@
 
         const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", "followingcount": "🏃", "totalposts": "📸" };
         
-        // Strict global blocklist for all technical keys
-        const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "processing_time", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound"];
+        const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound", "endpoint"];
 
         document.addEventListener('DOMContentLoaded', () => { updateHint(); document.getElementById('search_btn').addEventListener('click', executeSearch); });
 
@@ -105,7 +104,6 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        // Regex to clean technical symbols from key
                         let cleanKey = key.replace(/^[^a-zA-Z0-9]+/, '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
                         let keyNoSpace = lowerKey.replace(/\s+/g, '');
@@ -117,16 +115,18 @@
                             continue;
                         }
 
-                        // Super strict technical data filter
                         if (hiddenKeys.includes(keyNoSpace) || lowerKey.includes("processing time") || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('not found')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
                             let isName = lowerKey === "name" || lowerKey === "fullname";
+                            
+                            // Specific Logic: Aadhaar for Phone Search, ID for Telegram
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
-                            let label = isIdField ? "AADHAAR" : cleanKey.toUpperCase();
-                            let emoji = isName ? "👤" : (isIdField ? "🆔" : (emojiMap[keyNoSpace] || "🔹"));
+                            let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
+                            let emoji = isName ? "👤" : (isIdField ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
+                            
                             html += `<b>${emoji} ${label}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
                             html += processData(val);
