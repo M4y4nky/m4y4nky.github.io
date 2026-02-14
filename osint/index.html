@@ -62,7 +62,7 @@
                 "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
                 "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
                 "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck" },
-                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 8490408380" },
                 "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
                 "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
                 "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
@@ -100,9 +100,9 @@
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
                 
-                // Full API name in header
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${apiNames[cmd]} RESULTS ✨</b><br><br>`;
 
+                // Deep Scan Function for both Objects and Arrays
                 function processData(obj) {
                     let html = "";
                     for (let key in obj) {
@@ -122,7 +122,8 @@
                             continue;
                         }
 
-                        if (val && typeof val === 'object' && !Array.isArray(val)) {
+                        // Smart check for Objects AND Arrays to prevent [object Object]
+                        if (val && typeof val === 'object') {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
                             let emoji = emojiMap[lowerKey] || "🔹";
