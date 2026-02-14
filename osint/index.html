@@ -36,7 +36,7 @@
                 <option value="ff">🎮 FREE FIRE</option>
             </select>
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <input type="text" id="api_query" placeholder="Enter 10 digit number...">
+                <input type="text" id="api_query" placeholder="Enter target...">
                 <div id="input-hint">Hint: e.g. 9876543210</div>
             </div>
             <button id="search_btn">RUN SEARCH</button>
@@ -74,10 +74,11 @@
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅"
         };
 
-        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "key_used", "server", "breaches found"];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
+            updateHint();
         });
 
         async function executeSearch() {
@@ -88,7 +89,7 @@
             
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Accessing deep scan terminal...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Scanning secure terminal...</div>`;
             
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
@@ -96,15 +97,22 @@
                 
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
 
-                // Recursive function to solve [object Object] and clean names
-                function processData(obj) {
+                // FIXED: Deep scan function to fix [object Object]
+                function parseObject(obj) {
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        // Remove emojis and underscores for processing
+                        
+                        // Clean key names
                         let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
+                        // Skip hidden/promotional keys
+                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
+                            continue;
+                        }
+
+                        // Profile image handling
                         if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
                             if (val && val.length > 50) {
                                 img.src = val;
@@ -113,13 +121,8 @@
                             continue;
                         }
 
-                        // Hide promotional lines
-                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
-                            continue;
-                        }
-
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
-                            html += processData(val); 
+                            html += parseObject(val); // Dig deeper into the object
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
                             let emoji = emojiMap[lowerKey] || "🔹";
                             let displayKey = cleanKey.toUpperCase();
@@ -129,11 +132,11 @@
                     return html;
                 }
 
-                const finalHtml = processData(data);
-                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.1</div></div>`;
+                const finalHtml = parseObject(data);
+                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan finished. No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.1</div></div>`;
 
             } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Error: Connection Failed.</span>";
+                display.innerHTML = "<span style='color:red'>❌ Error: Connection Refused.</span>";
             }
         }
     </script>
