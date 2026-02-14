@@ -27,7 +27,7 @@
                 <option value="num">📱 PHONE (IN)</option>
                 <option value="gh">📂 GITHUB</option>
                 <option value="insta">📸 INSTAGRAM</option>
-                <option value="tg">💬 TELEGRAM</option>
+                <option value="tg" selected>💬 TELEGRAM</option>
                 <option value="pak">🇵🇰 PAKISTAN NUM</option>
                 <option value="ip">🌐 IP LOOKUP</option>
                 <option value="ifsc">🏦 IFSC SEARCH</option>
@@ -36,8 +36,8 @@
                 <option value="ff">🎮 FREE FIRE</option>
             </select>
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <input type="text" id="api_query" placeholder="Enter 10 digit number...">
-                <div id="input-hint">Hint: e.g. 9876543210</div>
+                <input type="text" id="api_query" placeholder="Enter Telegram UserID...">
+                <div id="input-hint">Hint: e.g. 123456789</div>
             </div>
             <button id="search_btn">RUN SEARCH</button>
         </div>
@@ -80,6 +80,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
+            updateHint(); // Set initial hint
         });
 
         async function executeSearch() {
@@ -103,8 +104,8 @@
                     for (let key in obj) {
                         let val = obj[key];
                         
-                        // Emoji Removal Logic: Strip emojis from the key name
-                        let cleanKey = key.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+                        // Emoji Removal: Stripping all emojis and special icons from the key name
+                        let cleanKey = key.replace(/[^\w\s]/gi, '').replace(/_/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
                         if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
@@ -122,6 +123,7 @@
                         if (val && typeof val === 'object') {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
+                            // Smart ID/Key display logic
                             let emoji = emojiMap[lowerKey] || "🔹";
                             let displayKey = cleanKey.toUpperCase();
                             html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
