@@ -85,7 +85,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Scanning secure database...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -114,17 +114,20 @@
                             continue;
                         }
 
-                        // Privacy Filter for User Email
                         if (val === "mayankguptamzpr@gmail.com") continue;
-
                         if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('not found')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            // Unified ID format for all APIs
-                            let emoji = (lowerKey === "name" || lowerKey === "fullname") ? "👤" : (keyNoSpace === "id" ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
-                            html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
+                            // ID logic changed to AADHAAR for Number Search
+                            let isName = lowerKey === "name" || lowerKey === "fullname";
+                            let isIdField = keyNoSpace === "id";
+                            
+                            let label = isIdField ? "AADHAAR" : cleanKey.toUpperCase();
+                            let emoji = isName ? "👤" : (isIdField ? "🆔" : (emojiMap[keyNoSpace] || "🔹"));
+                            
+                            html += `<b>${emoji} ${label}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
                             html += processData(val);
                         }
