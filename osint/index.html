@@ -73,7 +73,11 @@
             input.oninput = (e) => { if (config.numeric) e.target.value = e.target.value.replace(/[^0-9]/g, ''); };
         }
 
-        const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", "followingcount": "🏃", "totalposts": "📸" };
+        const emojiMap = { 
+            "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", 
+            "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", 
+            "followingcount": "🏃", "totalposts": "📸", "isactive": "⚡", "isbot": "🤖", "totalmsgcount": "💬", "totalgroups": "👥" 
+        };
         
         const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound", "endpoint"];
 
@@ -86,7 +90,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Scrutinizing data packets...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -94,7 +98,7 @@
 
                 function renderResults(dataObj) {
                     if (!dataObj || (dataObj.success === false)) return "";
-                    let items = Array.isArray(dataObj) ? dataObj : (dataObj.data && Array.isArray(dataObj.data) ? dataObj.data : (dataObj.results && Array.isArray(dataObj.results) ? dataObj.results : []));
+                    let items = Array.isArray(dataObj) ? dataObj : (dataObj.data && Array.isArray(dataObj.data) ? dataObj.data : (dataObj.results && Array.isArray(dataObj.results) ? dataObj.results : (dataObj.data ? [dataObj.data] : [])));
                     if (items.length > 0) return items.map(item => `<div class="result-item">${processData(item)}</div>`).join('');
                     const single = processData(dataObj);
                     return single.length > 0 ? `<div class="result-item">${single}</div>` : "";
@@ -119,17 +123,16 @@
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
-                        } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            let isName = lowerKey === "name" || lowerKey === "fullname";
-                            
-                            // Specific Logic: Aadhaar for Phone Search, ID for Telegram
+                        } else if (val !== null && val !== "" && !Array.isArray(val)) {
+                            let isName = lowerKey.includes("name");
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
                             let emoji = isName ? "👤" : (isIdField ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
                             
-                            html += `<b>${emoji} ${label}:</b> <span style="color:white">${val}</span><br>`;
-                        } else if (Array.isArray(val)) {
-                            html += processData(val);
+                            // Handling Boolean values (true/false)
+                            let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
+                            
+                            html += `<b>${emoji} ${label}:</b> <span style="color:white">${displayVal}</span><br>`;
                         }
                     }
                     return html;
