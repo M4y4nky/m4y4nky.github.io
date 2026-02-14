@@ -1,278 +1,273 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M4y4nkyâ€™s OSINT</title>
+<title>M4y4nky’s OSINT</title>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+:root{
+--bg:#0c0c0c;
+--win:#000;
+--text:#ffffff;
+--dim:#555555;
+--border:#333333;
+--cmd:#00ff41;
+--header:#1a1a1a;
+}
+
+body.light-mode{
+--bg:#f0f0f0;
+--win:#ffffff;
+--text:#000000;
+--dim:#999999;
+--border:#cccccc;
+--cmd:#0a7a2c;
+--header:#e5e5e5;
+}
+
 body{
-background:#000;
-color:#e5e5e5;
-font-family:monospace;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-margin:0;
+background:var(--bg);
+color:var(--text);
+font-family:ui-monospace, Menlo, monospace;
 }
 
 .terminal{
-width:95%;
-max-width:750px;
-background:#000;
-border:1px solid #333;
-border-radius:10px;
-box-shadow:0 0 40px rgba(0,255,65,0.2);
+background:var(--win);
+border:1px solid var(--border);
+box-shadow:0 20px 60px rgba(0,0,0,.5);
 }
 
 .header{
-background:#111;
-padding:10px;
-display:flex;
-justify-content:center;
-color:#999;
-border-bottom:1px solid #333;
+background:var(--header);
+border-bottom:1px solid var(--border);
 }
 
-.content{
-padding:20px;
-}
-
-.cmd{
-color:#00ff41;
-margin-bottom:10px;
+.cmd::before{
+content:"m4y4nky@system:~$ ";
+color:var(--cmd);
 }
 
 select,input{
-background:#000;
-color:#fff;
-border:1px solid #00ff41;
-padding:8px;
-margin-right:5px;
-font-family:monospace;
+background:transparent;
+border:1px solid var(--border);
+padding:6px 10px;
+color:var(--text);
+font-size:13px;
 }
 
 button{
-background:#000;
-color:#00ff41;
-border:1px solid #00ff41;
-padding:8px 14px;
+background:transparent;
+border:1px solid var(--cmd);
+color:var(--cmd);
+padding:6px 12px;
 cursor:pointer;
 }
 
 button:hover{
-background:#00ff41;
+background:var(--cmd);
 color:#000;
 }
 
-.result{
-margin-top:15px;
+.output{
+border:1px solid var(--border);
+padding:12px;
+margin-top:12px;
 white-space:pre-wrap;
+font-size:13px;
 }
 
-.success{color:#00ff41;}
-.error{color:#ff4d4d;}
-.label{color:#999;}
-.value{color:#fff;}
-.highlight{color:#00ff41;font-weight:bold;}
-
-.loader{
-border:2px solid #222;
-border-top:2px solid #00ff41;
-border-radius:50%;
-width:18px;
-height:18px;
-animation:spin 1s linear infinite;
-display:inline-block;
-}
-
-@keyframes spin{
-0%{transform:rotate(0deg);}
-100%{transform:rotate(360deg);}
-}
-
-@media(max-width:600px){
-select,input,button{
-display:block;
-width:100%;
-margin:6px 0;
-}
-}
+.dim{color:var(--dim)}
 </style>
 </head>
 
-<body>
+<body class="min-h-screen flex items-center justify-center p-6">
 
-<div class="terminal">
-<div class="header">M4y4nkyâ€™s OSINT</div>
+<div class="terminal w-full max-w-4xl rounded-lg overflow-hidden">
 
-<div class="content">
+<!-- HEADER -->
+<div class="header flex justify-between items-center px-4 py-2 text-xs">
+<div class="flex gap-2">
+<div class="w-3 h-3 bg-[#ff5f56] rounded-full"></div>
+<div class="w-3 h-3 bg-[#ffbd2e] rounded-full"></div>
+<div class="w-3 h-3 bg-[#27c93f] rounded-full"></div>
+</div>
+<div>M4y4nky’s OSINT</div>
+<div id="theme-toggle" class="cursor-pointer">☀️</div>
+</div>
 
-<div class="cmd">m4y4nky@system:~$ osint-scan</div>
+<div class="p-6 text-sm">
 
+<p class="dim text-xs">
+Last login: <span id="time"></span> on ttys001
+</p>
+
+<!-- OSINT -->
+<div class="mt-6">
+<p class="cmd">osint-scan</p>
+
+<div class="flex flex-wrap gap-2 mt-3">
 <select id="type">
 <option value="phone">phone</option>
+<option value="github">github</option>
 <option value="telegram">telegram</option>
 </select>
 
-<input id="target" placeholder="Enter target">
+<input id="query" placeholder="Enter target">
 
 <button onclick="scan()">run</button>
 
-<label style="font-size:13px;">
-<input type="checkbox" id="raw"> raw
+<label class="text-xs">
+<input type="checkbox" id="rawToggle"> raw
 </label>
+</div>
 
-<div id="output" class="result"></div>
+<div id="output" class="output"></div>
+</div>
 
 </div>
 </div>
 
 <script>
+document.getElementById("time").innerText=new Date().toLocaleString();
 
-const BASE = "https://YOUR-VERCEL-URL.vercel.app/api"; 
-// ðŸ‘† Replace this
-
-function showError(msg){
-document.getElementById("output").innerHTML=
-`<div class="error">Error: ${msg}</div>`;
-}
-
-function showLoading(){
-document.getElementById("output").innerHTML=
-`<span class="loader"></span> Scanning...`;
-}
-
-function showRaw(data){
-document.getElementById("output").innerHTML=
-`<pre>${JSON.stringify(data,null,2)}</pre>`;
-}
-
-function showPhone(data){
-
-if(!data.status || !data.results || data.results.length===0){
-showError("User not found");
-return;
-}
-
-const p=data.results[0];
-
-document.getElementById("output").innerHTML=
-`
-<div class="success">Phone Intelligence</div>
-
-<span class="label">Mobile:</span> 
-<span class="highlight">${p.mobile}</span>
-
-<span class="label">Name:</span> 
-<span class="value">${p.name||"N/A"}</span>
-
-<span class="label">Father:</span> 
-<span class="value">${p.fname||"N/A"}</span>
-
-<span class="label">Circle:</span> 
-<span class="value">${p.circle||"N/A"}</span>
-
-<span class="label">Government ID:</span> 
-<span class="value">${p.id||"N/A"}</span>
-
-<span class="label">Alternate:</span> 
-<span class="value">${p.alt||"N/A"}</span>
-
-<span class="label">Email:</span> 
-<span class="value">${p.email||"N/A"}</span>
-
-<span class="label">Address:</span>
-<span class="value">${(p.address||"").replace(/!!/g,", ").replace(/!/g,", ")}</span>
-`;
-}
-
-function showTelegram(data){
-
-if(!data.success || !data.data || !data.data.data){
-showError("User not found");
-return;
-}
-
-const t=data.data.data;
-
-document.getElementById("output").innerHTML=
-`
-<div class="success">Telegram Intelligence</div>
-
-<span class="label">Name:</span> 
-<span class="value">${t.first_name||""}</span>
-
-<span class="label">User ID:</span> 
-<span class="highlight">${t.id}</span>
-
-<span class="label">Active:</span> 
-<span class="value">${t.is_active}</span>
-
-<span class="label">Bot:</span> 
-<span class="value">${t.is_bot}</span>
-
-<span class="label">Total Messages:</span> 
-<span class="value">${t.total_msg_count}</span>
-
-<span class="label">Groups:</span> 
-<span class="value">${t.total_groups}</span>
-
-<span class="label">First Msg:</span> 
-<span class="value">${t.first_msg_date}</span>
-
-<span class="label">Last Msg:</span> 
-<span class="value">${t.last_msg_date}</span>
-`;
-}
+document.getElementById("theme-toggle").onclick=()=>{
+document.body.classList.toggle("light-mode");
+};
 
 async function scan(){
-
 const type=document.getElementById("type").value;
-const target=document.getElementById("target").value.trim();
-const raw=document.getElementById("raw").checked;
+const query=document.getElementById("query").value.trim();
+const raw=document.getElementById("rawToggle").checked;
+const out=document.getElementById("output");
 
-if(!target){
-showError("Enter a target");
+if(!query){
+out.innerText="Enter target value";
 return;
 }
 
-showLoading();
-
-let url="";
-
-if(type==="phone")
-url=`${BASE}/phone?number=${target}`;
-
-if(type==="telegram")
-url=`${BASE}/telegram?username=${target}`;
+out.innerText="Scanning...\n";
 
 try{
 
+const url=`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${encodeURIComponent(query)}`;
 const res=await fetch(url);
 
 if(!res.ok){
-showError("Server error "+res.status);
-return;
+throw new Error("Backend returned "+res.status);
 }
 
 const data=await res.json();
 
 if(raw){
-showRaw(data);
+out.innerText=JSON.stringify(data,null,2);
 return;
 }
 
-if(type==="phone") showPhone(data);
-if(type==="telegram") showTelegram(data);
+/* ================= PHONE ================= */
+if(type==="phone"){
 
-}catch(e){
-showError("Failed to fetch API");
+if(!data.status || !data.results || data.results.length===0){
+out.innerText="No phone data found";
+return;
 }
 
+let outputText="PHONE INTELLIGENCE\n\n";
+outputText+="Status: SUCCESS\n";
+outputText+="Profiles Found: "+data.results.length+"\n\n";
+
+data.results.forEach((p,index)=>{
+
+let cleanAddress="";
+let city="";
+let state="";
+let pincode="";
+
+if(p.address){
+let parts=p.address.replace(/!!/g,"!").split("!");
+if(parts.length>=3){
+city=parts[parts.length-3]||"";
+state=parts[parts.length-2]||"";
+pincode=parts[parts.length-1]||"";
+cleanAddress=parts.slice(0,parts.length-3).join(", ");
+}
 }
 
+outputText+=`--- Profile ${index+1} ---\n`;
+outputText+=`Mobile: ${p.mobile||"N/A"}\n`;
+outputText+=`Name: ${p.name||"N/A"}\n`;
+outputText+=`Father Name: ${p.fname||"N/A"}\n`;
+outputText+=`Circle: ${p.circle||"N/A"}\n`;
+outputText+=`Government ID: ${p.id||"N/A"}\n`;
+outputText+=`Alternate Number: ${p.alt||"N/A"}\n`;
+if(p.email){ outputText+=`Email: ${p.email}\n`; }
+outputText+=`Address: ${cleanAddress}\n`;
+outputText+=`City: ${city}\n`;
+outputText+=`State: ${state}\n`;
+outputText+=`Pincode: ${pincode}\n\n`;
+});
+
+out.innerText=outputText;
+}
+
+/* ================= GITHUB ================= */
+if(type==="github"){
+if(data.message==="Not Found"){
+out.innerText="GitHub user not found";
+return;
+}
+
+out.innerText=
+`GITHUB PROFILE
+
+Username: ${data.login}
+Name: ${data.name||"N/A"}
+Followers: ${data.followers}
+Repos: ${data.public_repos}
+Joined: ${new Date(data.created_at).toDateString()}
+Last Updated: ${new Date(data.updated_at).toDateString()}
+Profile: ${data.html_url}`;
+}
+
+/* ================= TELEGRAM ================= */
+if(type==="telegram"){
+
+let tg=data?.data?.data||data?.data||data;
+
+if(!tg || !tg.id){
+out.innerText="Telegram user not found";
+return;
+}
+
+let outputText="TELEGRAM INTELLIGENCE\n\n";
+
+outputText+=`Name: ${tg.first_name||""} ${tg.last_name||""}\n`;
+outputText+=`User ID: ${tg.id}\n`;
+outputText+=`Active: ${tg.is_active}\n`;
+outputText+=`Is Bot: ${tg.is_bot}\n\n`;
+
+outputText+=`Total Groups: ${tg.total_groups||0}\n`;
+outputText+=`Admin In Groups: ${tg.adm_in_groups||0}\n`;
+outputText+=`Group Messages: ${tg.msg_in_groups_count||0}\n`;
+outputText+=`Total Messages: ${tg.total_msg_count||0}\n`;
+outputText+=`Names Count: ${tg.names_count||0}\n`;
+outputText+=`Usernames Count: ${tg.usernames_count||0}\n\n`;
+
+if(tg.first_msg_date){
+outputText+=`First Message: ${new Date(tg.first_msg_date).toLocaleString()}\n`;
+}
+if(tg.last_msg_date){
+outputText+=`Last Message: ${new Date(tg.last_msg_date).toLocaleString()}\n`;
+}
+
+out.innerText=outputText;
+}
+
+}catch(err){
+out.innerText="Error: "+err.message;
+}
+}
 </script>
 
 </body>
