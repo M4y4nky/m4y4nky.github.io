@@ -72,7 +72,8 @@
             hint.innerText = hints[cmd].h;
         }
 
-        const emojiMap = { "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐" };
+        // Updated emojiMap: Name emoji removed as per request
+        const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐" };
         const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
 
         document.addEventListener('DOMContentLoaded', () => { updateHint(); document.getElementById('search_btn').addEventListener('click', executeSearch); });
@@ -106,7 +107,6 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        // Improved Key Cleaning: Strict Regex to remove all non-alphanumeric characters from start
                         let cleanKey = key.replace(/^[^a-zA-Z0-9]+/, '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
@@ -123,7 +123,8 @@
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            let emoji = emojiMap[lowerKey.replace(/\s+/g, '')] || "🔹";
+                            // Logic to ensure no emoji for NAME field
+                            let emoji = (lowerKey === "name" || lowerKey === "fullname") ? "" : (emojiMap[lowerKey.replace(/\s+/g, '')] || "🔹");
                             html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
                             html += processData(val);
