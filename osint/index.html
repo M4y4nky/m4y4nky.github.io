@@ -1,114 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>OSINT AI Terminal</title>
+  <title>OSINT AI Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: 'Courier New', monospace;
-      background: radial-gradient(circle at top, #0f172a, #020617);
-      color: #e2e8f0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #020617);
+      color: white;
     }
 
     header {
       text-align: center;
-      padding: 25px;
+      padding: 25px 15px;
       font-size: 22px;
-      letter-spacing: 3px;
-      color: #38bdf8;
-      text-shadow: 0 0 15px #0ea5e9;
+      font-weight: 600;
+      letter-spacing: 2px;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    .container {
-      max-width: 900px;
+    .wrapper {
+      max-width: 1000px;
       margin: auto;
       padding: 20px;
     }
 
-    .panel {
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(12px);
-      border: 1px solid #0ea5e9;
-      border-radius: 12px;
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(15px);
+      border-radius: 14px;
       padding: 25px;
-      box-shadow: 0 0 40px rgba(14,165,233,0.2);
+      box-shadow: 0 0 40px rgba(0,0,0,0.4);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     select, input {
       padding: 12px;
-      width: 220px;
-      background: #020617;
-      border: 1px solid #0ea5e9;
-      color: #38bdf8;
-      border-radius: 6px;
-      margin-right: 10px;
+      border-radius: 8px;
+      border: none;
       outline: none;
+      background: #111827;
+      color: white;
+      flex: 1;
+      min-width: 150px;
     }
 
     button {
       padding: 12px 18px;
-      background: #0ea5e9;
+      border-radius: 8px;
       border: none;
-      border-radius: 6px;
+      background: #3b82f6;
+      color: white;
       cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
+      transition: 0.2s ease;
     }
 
     button:hover {
-      box-shadow: 0 0 20px #0ea5e9;
-      transform: scale(1.05);
+      background: #2563eb;
+      transform: translateY(-2px);
     }
 
     .result {
-      margin-top: 25px;
-      background: #020617;
-      border: 1px solid #0ea5e9;
-      border-radius: 12px;
-      padding: 20px;
+      margin-top: 20px;
+      background: #0f172a;
+      padding: 18px;
+      border-radius: 10px;
       overflow-x: auto;
       white-space: pre-wrap;
       font-size: 14px;
-      box-shadow: inset 0 0 25px rgba(14,165,233,0.15);
+      line-height: 1.5;
+      border: 1px solid rgba(59,130,246,0.4);
     }
 
     .loading {
+      animation: blink 1s infinite;
       color: #facc15;
-      animation: pulse 1s infinite;
     }
 
-    @keyframes pulse {
-      0% { opacity: 0.4; }
+    @keyframes blink {
+      0% { opacity: 0.3; }
       50% { opacity: 1; }
-      100% { opacity: 0.4; }
+      100% { opacity: 0.3; }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        font-size: 18px;
+      }
+      .card {
+        padding: 18px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<header>OSINT AI FUTURE TERMINAL</header>
+<header>OSINT AI • FUTURE INTEL PANEL</header>
 
-<div class="container">
-  <div class="panel">
-    <select id="type">
-      <option value="github">GitHub</option>
-      <option value="pincode">Pincode</option>
-      <option value="telegram">Telegram</option>
-      <option value="ifsc">IFSC</option>
-      <option value="ip">IP</option>
-      <option value="email">Email</option>
-      <option value="phone">Phone</option>
-    </select>
+<div class="wrapper">
+  <div class="card">
 
-    <input type="text" id="value" placeholder="Enter target...">
-    <button onclick="scan()">SCAN</button>
+    <div class="controls">
+      <select id="type">
+        <option value="github">GitHub</option>
+        <option value="pincode">Pincode</option>
+        <option value="telegram">Telegram</option>
+        <option value="ifsc">IFSC</option>
+        <option value="ip">IP</option>
+        <option value="email">Email</option>
+        <option value="phone">Phone</option>
+      </select>
+
+      <input type="text" id="value" placeholder="Enter target...">
+
+      <button onclick="scan()">Scan</button>
+    </div>
 
     <div id="result" class="result">
-      Awaiting target input...
+Awaiting target input...
     </div>
+
   </div>
 </div>
 
@@ -121,11 +148,11 @@ function scan() {
   const result = document.getElementById("result");
 
   if (!value) {
-    result.textContent = ">> No target provided.";
+    result.textContent = "Please enter a value.";
     return;
   }
 
-  result.innerHTML = `<span class="loading">>> Scanning ${value}...</span>`;
+  result.innerHTML = `<span class="loading">Scanning ${value}...</span>`;
 
   fetch(`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${value}`)
     .then(res => res.json())
@@ -133,7 +160,7 @@ function scan() {
       result.textContent = JSON.stringify(data, null, 2);
     })
     .catch(() => {
-      result.textContent = ">> Connection failure.";
+      result.textContent = "Connection error.";
     });
 }
 
