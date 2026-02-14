@@ -2,85 +2,85 @@
 <html>
 <head>
   <title>OSINT Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       margin: 0;
-      font-family: Consolas, monospace;
-      background: #0a0a0a;
-      color: #00ff88;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
     }
 
     header {
-      background: #000;
+      background: #111827;
+      color: white;
       padding: 15px;
       text-align: center;
-      font-size: 22px;
-      border-bottom: 1px solid #00ff88;
-      letter-spacing: 2px;
+      font-size: 20px;
     }
 
     .container {
-      padding: 20px;
       max-width: 900px;
-      margin: auto;
+      margin: 30px auto;
+      padding: 20px;
     }
 
     .search-box {
-      background: #111;
-      padding: 15px;
-      border: 1px solid #00ff88;
-      border-radius: 6px;
-      margin-bottom: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     select, input {
-      padding: 8px;
-      width: 60%;
-      background: black;
-      border: 1px solid #00ff88;
-      color: #00ff88;
+      padding: 10px;
+      margin-right: 10px;
+      width: 200px;
     }
 
     button {
-      padding: 8px 14px;
-      background: #00ff88;
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
       border: none;
       cursor: pointer;
-      margin-left: 8px;
+      border-radius: 4px;
     }
 
     .card {
-      background: #111;
-      border: 1px solid #00ff88;
+      background: white;
+      margin-top: 20px;
       padding: 15px;
-      border-radius: 6px;
-      margin-top: 15px;
-      animation: fadeIn 0.3s ease-in-out;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .row {
+      margin-bottom: 10px;
     }
 
     .label {
-      color: #aaa;
-      font-size: 13px;
+      font-weight: bold;
+      color: #374151;
     }
 
     .value {
-      color: white;
-      margin-bottom: 10px;
-      font-size: 15px;
+      color: #111827;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    pre {
+      background: #111827;
+      color: #00ff88;
+      padding: 15px;
+      overflow-x: auto;
+      border-radius: 6px;
     }
   </style>
 </head>
 
 <body>
 
-<header>OSINT TERMINAL v2.0</header>
+<header>OSINT Dashboard</header>
 
 <div class="container">
 
@@ -96,18 +96,72 @@
     </select>
 
     <input type="text" id="value" placeholder="Enter value">
-    <button onclick="search()">SCAN</button>
+    <button onclick="search()">Search</button>
   </div>
 
-  <div id="results"></div>
+  <div id="result"></div>
 
 </div>
 
 <script>
 
-function highlight(label, value) {
+function row(label, value) {
   return `
-    <div>
-      <div class="label">${label}</div>
-      <div class="value">${value || "N/A"}</div>
+    <div class="row">
+      <span class="label">${label}: </span>
+      <span class="value">${value ?? "N/A"}</span>
     </div>
+  `;
+}
+
+function search() {
+
+  const type = document.getElementById("type").value;
+  const value = document.getElementById("value").value;
+  const result = document.getElementById("result");
+
+  if (!value) {
+    alert("Enter a value");
+    return;
+  }
+
+  result.innerHTML = `<div class="card">Loading...</div>`;
+
+  fetch(`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${value}`)
+  .then(res => res.json())
+  .then(data => {
+
+    let output = `<div class="card">`;
+
+    if (type === "github") {
+      output += row("Username", data.login);
+      output += row("Name", data.name);
+      output += row("Followers", data.followers);
+      output += row("Repos", data.public_repos);
+      output += row("Profile", data.html_url);
+    }
+
+    else if (type === "ip") {
+      output += row("IP", data.ip);
+      output += row("Country", data.country);
+      output += row("Region", data.region);
+      output += row("ISP", data.isp);
+    }
+
+    else {
+      output += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    output += `</div>`;
+    result.innerHTML = output;
+
+  })
+  .catch(error => {
+    result.innerHTML = `<div class="card">Error fetching data.</div>`;
+  });
+}
+
+</script>
+
+</body>
+</html>
