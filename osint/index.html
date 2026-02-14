@@ -1,167 +1,276 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>OSINT AI Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M4y4nkyâ€™s OSINT</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+body{
+background:#000;
+color:#e5e5e5;
+font-family:monospace;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
+}
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #020617);
-      color: white;
-    }
+.terminal{
+width:95%;
+max-width:750px;
+background:#000;
+border:1px solid #333;
+border-radius:10px;
+box-shadow:0 0 40px rgba(0,255,65,0.2);
+}
 
-    header {
-      text-align: center;
-      padding: 25px 15px;
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
+.header{
+background:#111;
+padding:10px;
+display:flex;
+justify-content:center;
+color:#999;
+border-bottom:1px solid #333;
+}
 
-    .wrapper {
-      max-width: 1000px;
-      margin: auto;
-      padding: 20px;
-    }
+.content{
+padding:20px;
+}
 
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(15px);
-      border-radius: 14px;
-      padding: 25px;
-      box-shadow: 0 0 40px rgba(0,0,0,0.4);
-    }
+.cmd{
+color:#00ff41;
+margin-bottom:10px;
+}
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+select,input{
+background:#000;
+color:#fff;
+border:1px solid #00ff41;
+padding:8px;
+margin-right:5px;
+font-family:monospace;
+}
 
-    select, input {
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      background: #111827;
-      color: white;
-      flex: 1;
-      min-width: 150px;
-    }
+button{
+background:#000;
+color:#00ff41;
+border:1px solid #00ff41;
+padding:8px 14px;
+cursor:pointer;
+}
 
-    button {
-      padding: 12px 18px;
-      border-radius: 8px;
-      border: none;
-      background: #3b82f6;
-      color: white;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
+button:hover{
+background:#00ff41;
+color:#000;
+}
 
-    button:hover {
-      background: #2563eb;
-      transform: translateY(-2px);
-    }
+.result{
+margin-top:15px;
+white-space:pre-wrap;
+}
 
-    .result {
-      margin-top: 20px;
-      background: #0f172a;
-      padding: 18px;
-      border-radius: 10px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.5;
-      border: 1px solid rgba(59,130,246,0.4);
-    }
+.success{color:#00ff41;}
+.error{color:#ff4d4d;}
+.label{color:#999;}
+.value{color:#fff;}
+.highlight{color:#00ff41;font-weight:bold;}
 
-    .loading {
-      animation: blink 1s infinite;
-      color: #facc15;
-    }
+.loader{
+border:2px solid #222;
+border-top:2px solid #00ff41;
+border-radius:50%;
+width:18px;
+height:18px;
+animation:spin 1s linear infinite;
+display:inline-block;
+}
 
-    @keyframes blink {
-      0% { opacity: 0.3; }
-      50% { opacity: 1; }
-      100% { opacity: 0.3; }
-    }
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
 
-    @media (max-width: 600px) {
-      header {
-        font-size: 18px;
-      }
-      .card {
-        padding: 18px;
-      }
-    }
-  </style>
+@media(max-width:600px){
+select,input,button{
+display:block;
+width:100%;
+margin:6px 0;
+}
+}
+</style>
 </head>
 
 <body>
 
-<header>OSINT AI • FUTURE INTEL PANEL</header>
+<div class="terminal">
+<div class="header">M4y4nkyâ€™s OSINT</div>
 
-<div class="wrapper">
-  <div class="card">
+<div class="content">
 
-    <div class="controls">
-      <select id="type">
-        <option value="github">GitHub</option>
-        <option value="pincode">Pincode</option>
-        <option value="telegram">Telegram</option>
-        <option value="ifsc">IFSC</option>
-        <option value="ip">IP</option>
-        <option value="email">Email</option>
-        <option value="phone">Phone</option>
-      </select>
+<div class="cmd">m4y4nky@system:~$ osint-scan</div>
 
-      <input type="text" id="value" placeholder="Enter target...">
+<select id="type">
+<option value="phone">phone</option>
+<option value="telegram">telegram</option>
+</select>
 
-      <button onclick="scan()">Scan</button>
-    </div>
+<input id="target" placeholder="Enter target">
 
-    <div id="result" class="result">
-Awaiting target input...
-    </div>
+<button onclick="scan()">run</button>
 
-  </div>
+<label style="font-size:13px;">
+<input type="checkbox" id="raw"> raw
+</label>
+
+<div id="output" class="result"></div>
+
+</div>
 </div>
 
 <script>
 
-function scan() {
+const BASE = "https://YOUR-VERCEL-URL.vercel.app/api"; 
+// ðŸ‘† Replace this
 
-  const type = document.getElementById("type").value;
-  const value = document.getElementById("value").value;
-  const result = document.getElementById("result");
+function showError(msg){
+document.getElementById("output").innerHTML=
+`<div class="error">Error: ${msg}</div>`;
+}
 
-  if (!value) {
-    result.textContent = "Please enter a value.";
-    return;
-  }
+function showLoading(){
+document.getElementById("output").innerHTML=
+`<span class="loader"></span> Scanning...`;
+}
 
-  result.innerHTML = `<span class="loading">Scanning ${value}...</span>`;
+function showRaw(data){
+document.getElementById("output").innerHTML=
+`<pre>${JSON.stringify(data,null,2)}</pre>`;
+}
 
-  fetch(`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${value}`)
-    .then(res => res.json())
-    .then(data => {
-      result.textContent = JSON.stringify(data, null, 2);
-    })
-    .catch(() => {
-      result.textContent = "Connection error.";
-    });
+function showPhone(data){
+
+if(!data.status || !data.results || data.results.length===0){
+showError("User not found");
+return;
+}
+
+const p=data.results[0];
+
+document.getElementById("output").innerHTML=
+`
+<div class="success">Phone Intelligence</div>
+
+<span class="label">Mobile:</span> 
+<span class="highlight">${p.mobile}</span>
+
+<span class="label">Name:</span> 
+<span class="value">${p.name||"N/A"}</span>
+
+<span class="label">Father:</span> 
+<span class="value">${p.fname||"N/A"}</span>
+
+<span class="label">Circle:</span> 
+<span class="value">${p.circle||"N/A"}</span>
+
+<span class="label">Government ID:</span> 
+<span class="value">${p.id||"N/A"}</span>
+
+<span class="label">Alternate:</span> 
+<span class="value">${p.alt||"N/A"}</span>
+
+<span class="label">Email:</span> 
+<span class="value">${p.email||"N/A"}</span>
+
+<span class="label">Address:</span>
+<span class="value">${(p.address||"").replace(/!!/g,", ").replace(/!/g,", ")}</span>
+`;
+}
+
+function showTelegram(data){
+
+if(!data.success || !data.data || !data.data.data){
+showError("User not found");
+return;
+}
+
+const t=data.data.data;
+
+document.getElementById("output").innerHTML=
+`
+<div class="success">Telegram Intelligence</div>
+
+<span class="label">Name:</span> 
+<span class="value">${t.first_name||""}</span>
+
+<span class="label">User ID:</span> 
+<span class="highlight">${t.id}</span>
+
+<span class="label">Active:</span> 
+<span class="value">${t.is_active}</span>
+
+<span class="label">Bot:</span> 
+<span class="value">${t.is_bot}</span>
+
+<span class="label">Total Messages:</span> 
+<span class="value">${t.total_msg_count}</span>
+
+<span class="label">Groups:</span> 
+<span class="value">${t.total_groups}</span>
+
+<span class="label">First Msg:</span> 
+<span class="value">${t.first_msg_date}</span>
+
+<span class="label">Last Msg:</span> 
+<span class="value">${t.last_msg_date}</span>
+`;
+}
+
+async function scan(){
+
+const type=document.getElementById("type").value;
+const target=document.getElementById("target").value.trim();
+const raw=document.getElementById("raw").checked;
+
+if(!target){
+showError("Enter a target");
+return;
+}
+
+showLoading();
+
+let url="";
+
+if(type==="phone")
+url=`${BASE}/phone?number=${target}`;
+
+if(type==="telegram")
+url=`${BASE}/telegram?username=${target}`;
+
+try{
+
+const res=await fetch(url);
+
+if(!res.ok){
+showError("Server error "+res.status);
+return;
+}
+
+const data=await res.json();
+
+if(raw){
+showRaw(data);
+return;
+}
+
+if(type==="phone") showPhone(data);
+if(type==="telegram") showTelegram(data);
+
+}catch(e){
+showError("Failed to fetch API");
+}
+
 }
 
 </script>
