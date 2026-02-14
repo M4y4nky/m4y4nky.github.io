@@ -57,19 +57,32 @@
             const input = document.getElementById('api_query');
             const hint = document.getElementById('input-hint');
             const hints = {
-                "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
-                "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
-                "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck" },
-                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
-                "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
-                "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
-                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
-                "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 110001" },
-                "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com" },
-                "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889" }
+                "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210", type: "tel", max: "10" },
+                "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds", type: "text", max: "39" },
+                "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck", type: "text", max: "30" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789", type: "number", max: "15" },
+                "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567", type: "tel", max: "11" },
+                "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8", type: "text", max: "45" },
+                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234", type: "text", max: "11" },
+                "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 110001", type: "number", max: "6" },
+                "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com", type: "email", max: "100" },
+                "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889", type: "number", max: "12" }
             };
-            input.placeholder = hints[cmd].p;
-            hint.innerText = hints[cmd].h;
+            
+            const config = hints[cmd];
+            input.value = ""; // Clear on switch
+            input.placeholder = config.p;
+            input.type = config.type;
+            input.maxLength = config.max;
+            hint.innerText = config.h;
+
+            // Strict numeric filter for Phone Number
+            input.oninput = (e) => {
+                if (config.type === "tel" || cmd === "num") {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    if (e.target.value.length > config.max) e.target.value = e.target.value.slice(0, config.max);
+                }
+            };
         }
 
         const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐" };
@@ -84,7 +97,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Searching secure database...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Scanning secure database...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -122,7 +135,6 @@
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            // Strict No-Emoji for NAME/FULLNAME
                             let emoji = (lowerKey === "name" || lowerKey === "fullname") ? "" : (emojiMap[lowerKey.replace(/\s+/g, '')] || "🔹");
                             html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
