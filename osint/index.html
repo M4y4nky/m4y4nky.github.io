@@ -73,17 +73,13 @@
             input.oninput = (e) => { if (config.numeric) e.target.value = e.target.value.replace(/[^0-9]/g, ''); };
         }
 
-        // Deep mapping for emojis across all tools
+        // Restored Specific Emoji Map
         const emojiMap = { 
-            "admin_groups": "👮", "adm_in_groups": "👮", "first_msg_date": "📅", "firstmsgdate": "📅",
-            "last_msg_date": "📅", "lastmsgdate": "📅", "msg_in_groups_count": "✉️", "msgingroupscount": "✉️", 
-            "names_count": "👥", "namescount": "👥", "usernames_count": "📛", "usernamescount": "📛", 
-            "total_groups": "👥", "totalgroups": "👥", "total_msg_count": "💬", "totalmsgcount": "💬",
-            "is_active": "⚡", "isactive": "⚡", "is_bot": "🤖", "isbot": "🤖", "fname": "👨‍👦", "mname": "👩‍👦", 
-            "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", 
-            "email": "📧", "circle": "🌐", "username": "📛", "followerscount": "👥", "followingcount": "🏃", 
-            "totalposts": "📸", "bank": "🏦", "branch": "🏢", "ifsc": "🔑", "district": "📍", "isp": "📡", 
-            "org": "🏢", "country": "🌍", "timezone": "🕒", "createdat": "📅", "publicrepos": "📂", "bio": "ℹ️"
+            "firstmsgdate": "📅", "first_msg_date": "📅", "lastmsgdate": "📅", "last_msg_date": "📅", 
+            "isactive": "⚡", "is_active": "⚡", "isbot": "🤖", "is_bot": "🤖", "msgingroupscount": "✉️", 
+            "msg_in_groups_count": "✉️", "totalgroups": "👥", "total_groups": "👥", "totalmsgcount": "💬", 
+            "total_msg_count": "💬", "mobile": "📱", "address": "🏠", "city": "🌆", "state": "🗺️", 
+            "pincode": "📍", "username": "📛", "totalposts": "📸", "bank": "🏦", "ifsc": "🔑"
         };
         
         const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound", "endpoint"];
@@ -97,7 +93,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Searching secure database...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Running deep scan terminal...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -135,7 +131,7 @@
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
                             
-                            // Domain specific emoji selection
+                            // Blue diamond for IDs and specific icons for others
                             let emoji = isName ? "👤" : (isIdField ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
                             
                             let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
