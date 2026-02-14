@@ -70,17 +70,21 @@
 
         const emojiMap = {
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
-            "alt": "🔢", "id": "🔹", "address": "🏠", "city": "🌆",
+            "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
             "dob": "📅", "gender": "🚻", "username": "📛", "bio": "📝", 
             "followerscount": "👥", "followingcount": "🏃", "fullname": "👤",
-            "first name": "👤", "total msg count": "📊", "total groups": "👥"
+            "avatar_url": "🖼️", // Added for GitHub profile image
+            "avatar url": "🖼️", // Also include space-separated version if needed
+            "profile image": "🖼️", // Generic for any profile image
+            "profile_image_url": "🖼️"
         };
 
         const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
+            updateHint(); // Set initial hint
         });
 
         async function executeSearch() {
@@ -104,12 +108,13 @@
                     for (let key in obj) {
                         let val = obj[key];
                         
-                        // Emoji Removal: Stripping all icons from the key name
-                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
+                        // Strict Emoji Stripping Logic
+                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim(); 
                         let lowerKey = cleanKey.toLowerCase();
 
-                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
-                            if (val && val.length > 50) {
+                        // Check for various forms of image URLs
+                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic") || lowerKey.includes("avatarurl") || lowerKey.includes("profileimageurl")) {
+                            if (val && typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:image'))) {
                                 img.src = val;
                                 img.style.display = "block";
                             }
@@ -123,7 +128,6 @@
                         if (val && typeof val === 'object') {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
-                            // Uniform Icon Logic
                             let emoji = emojiMap[lowerKey] || "🔹";
                             let displayKey = cleanKey.toUpperCase();
                             html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
