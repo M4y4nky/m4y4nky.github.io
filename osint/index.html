@@ -1,45 +1,100 @@
-// Emojis mapping for common keys
-const emojiMap = {
-    "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
-    "alt": "🔢", "id": "🆔 (ID/Aadhaar)", "address": "🏠", "city": "🌆",
-    "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
-    "dob": "📅", "gender": "🚻", "operator": "📶", "circle": "📡",
-    "username": "📛", "bio": "📝", "followers": "👥", "following": "🏃",
-    "ip": "🌐", "org": "🏢", "country": "🌍", "uid": "🎮"
-};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M4Y4NKY OSINT TERMINAL</title>
+    <style>
+        body { background: #010409; color: #39ff14; font-family: monospace; padding: 10px; margin: 0; }
+        .box { max-width: 850px; margin: 15px auto; border: 1px solid #30363d; border-radius: 12px; padding: 20px; background: #0d1117; box-shadow: 0 0 15px rgba(57,255,20,0.1); }
+        .controls { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        input, select, button { background: #161b22; color: #39ff14; border: 1px solid #30363d; padding: 12px; border-radius: 6px; font-size: 15px; outline: none; }
+        button { background: #238636; color: white; cursor: pointer; font-weight: bold; border: none; }
+        button:hover { background: #2ea043; box-shadow: 0 0 10px #238636; }
+        #json-view { margin-top: 20px; background: #000; padding: 15px; border: 1px dashed #30363d; border-radius: 6px; white-space: pre-wrap; overflow-x: auto; font-size: 13px; color: #00ff00; min-height: 250px; text-align: left; }
+        @media (min-width: 600px) { .controls { flex-direction: row; } select, input { flex: 1; } button { flex: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3 style="text-align:center;">💠 M4Y4NKY OSINT TERMINAL</h3>
+        <div class="controls">
+            <select id="api_cmd">
+                <option value="num">📱 PHONE (IN)</option>
+                <option value="gh">📂 GITHUB</option>
+                <option value="insta">📸 INSTAGRAM</option>
+                <option value="tg">💬 TELEGRAM</option>
+                <option value="pak">🇵🇰 PAKISTAN NUM</option>
+                <option value="ip">🌐 IP LOOKUP</option>
+                <option value="ifsc">🏦 IFSC SEARCH</option>
+                <option value="pincode">📍 PINCODE</option>
+                <option value="email">📧 EMAIL CHECK</option>
+                <option value="ff">🎮 FREE FIRE</option>
+            </select>
+            <input type="text" id="api_query" placeholder="Enter target data...">
+            <button id="search_btn">RUN SEARCH</button>
+        </div>
+        <div id="json-view">// Terminal Ready...</div>
+    </div>
 
-async function executeSearch() {
-    const cmd = document.getElementById('api_cmd').value;
-    const q = document.getElementById('api_query').value;
-    const display = document.getElementById('json-view');
-    
-    display.innerHTML = "🔍 <span style='color:white'>Scanning Secure Database...</span>";
-    
-    try {
-        const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
-        const data = await res.json();
-        
-        // Deep scan logic to find the actual data
-        let finalData = data.results || data.data || data.info || data;
-        if (Array.isArray(finalData)) finalData = finalData[0];
+    <script>
+        // Emojis mapping for common keys
+        const emojiMap = {
+            "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
+            "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
+            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
+            "dob": "📅", "gender": "🚻", "operator": "📶", "circle": "📡",
+            "username": "📛", "bio": "📝", "followers": "👥", "following": "🏃",
+            "ip": "🌐", "org": "🏢", "country": "🌍", "uid": "🎮"
+        };
 
-        // Emojify Formatting Logic
-        let formattedOutput = `<div style="border-left: 3px solid #39ff14; padding-left: 15px;">`;
-        formattedOutput += `<b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
+        // Event handler registration
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('search_btn').addEventListener('click', executeSearch);
+        });
 
-        for (let key in finalData) {
-            let val = finalData[key];
-            if (val && typeof val !== 'object') {
-                let emoji = emojiMap[key.toLowerCase()] || "🔹";
-                let cleanKey = key.replace(/_/g, ' ').toUpperCase();
-                formattedOutput += `<b>${emoji} ${cleanKey}:</b> <span style="color:white"><code>${val}</code></span><br>`;
+        async function executeSearch() {
+            const cmd = document.getElementById('api_cmd').value;
+            const q = document.getElementById('api_query').value;
+            const display = document.getElementById('json-view');
+            
+            if(!q) return alert("Bhai, kuch toh enter karo!");
+            
+            display.innerHTML = `<div style="color:#888">🔍 Scanning Secure Database...</div>`;
+            
+            try {
+                const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
+                const data = await res.json();
+                
+                let formattedOutput = `<div style="line-height:1.8;">`;
+                formattedOutput += `<b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
+
+                // Recursive function to handle nested data
+                function processData(obj) {
+                    let html = "";
+                    for (let key in obj) {
+                        let val = obj[key];
+                        if (val && typeof val === 'object') {
+                            html += processData(val); 
+                        } else if (val && val !== "null" && val !== "") {
+                            let emoji = emojiMap[key.toLowerCase()] || "🔹";
+                            let cleanKey = key.replace(/_/g, ' ').toUpperCase();
+                            html += `<b>${emoji} ${cleanKey}:</b> <span style="color:white">${val}</span><br>`;
+                        }
+                    }
+                    return html;
+                }
+
+                const finalHtml = processData(data);
+                formattedOutput += finalHtml || `<span style="color:red">⚠️ No records found.</span>`;
+                formattedOutput += `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v2.1</div></div>`;
+                
+                display.innerHTML = formattedOutput;
+
+            } catch (e) {
+                display.innerHTML = "<span style='color:red'>❌ Error: Could not connect to API.</span>";
             }
         }
-        
-        formattedOutput += `<br><small style="color:#555">🤖 M4y4nky-OSINT Terminal v2.0</small></div>`;
-        display.innerHTML = formattedOutput;
-
-    } catch (e) {
-        display.innerHTML = "❌ <span style='color:red'>Terminal Error: Connection Refused</span>";
-    }
-}
+    </script>
+</body>
+</html>
