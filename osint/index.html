@@ -73,13 +73,15 @@
             input.oninput = (e) => { if (config.numeric) e.target.value = e.target.value.replace(/[^0-9]/g, ''); };
         }
 
-        // Expanded Emoji Map for IFSC and IP
+        // Updated Exhaustive Emoji Map
         const emojiMap = { 
             "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", 
             "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", 
             "followingcount": "🏃", "totalposts": "📸", "isactive": "⚡", "isbot": "🤖", "totalmsgcount": "💬", 
             "totalgroups": "👥", "bank": "🏦", "branch": "🏢", "ifsc": "🔑", "micr": "📟", "district": "📍", 
-            "isp": "📡", "org": "🏢", "as": "⚙️", "country": "🌍", "countrycode": "🏳️", "lat": "📐", "lon": "📏", "timezone": "🕒"
+            "isp": "📡", "org": "🏢", "as": "⚙️", "country": "🌍", "countrycode": "🏳️", "lat": "📐", "lon": "📏", 
+            "timezone": "🕒", "bankcode": "📟", "centre": "🎯", "contact": "📞", "imps": "💳", "neft": "💸", 
+            "rtgs": "💰", "upi": "📲", "iso3166": "🚩", "region": "🗺️", "zip": "📮"
         };
         
         const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound", "endpoint"];
@@ -129,10 +131,9 @@
                         } else if (val !== null && val !== "" && !Array.isArray(val)) {
                             let isName = lowerKey.includes("name");
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
-                            
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
                             
-                            // Emoji logic updated for IP and IFSC
+                            // Smart Emoji Selection
                             let emoji = isName ? "👤" : (isIdField ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
                             
                             let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
