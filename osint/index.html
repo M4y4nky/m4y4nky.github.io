@@ -13,15 +13,11 @@
         button { background: #238636; color: white; cursor: pointer; font-weight: bold; border: none; }
         button:hover { background: #2ea043; box-shadow: 0 0 10px #238636; }
         #input-hint { font-size: 11px; color: #888; margin-top: 5px; padding-left: 5px; }
-        
-        /* Centered Image Styling */
         .img-container { display: flex; justify-content: center; width: 100%; margin: 15px 0; }
         .profile-pic { width: 120px; height: 120px; border: 3px solid #39ff14; border-radius: 50%; display: none; object-fit: cover; box-shadow: 0 0 10px #39ff14; }
-
         #json-view { margin-top: 20px; background: #000; padding: 15px; border: 1px dashed #30363d; border-radius: 6px; white-space: pre-wrap; overflow-x: auto; font-size: 13px; color: #00ff00; min-height: 250px; text-align: left; line-height: 1.8; }
         .result-item { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px dashed #30363d; }
         .result-item:last-child { border-bottom: none; }
-        
         @media (min-width: 600px) { .controls { flex-direction: row; } select, input { flex: 1; } button { flex: 0.5; } }
     </style>
 </head>
@@ -47,20 +43,14 @@
             </div>
             <button id="search_btn">RUN SEARCH</button>
         </div>
-        
         <div class="img-container">
             <img id="p-img" class="profile-pic" src="" alt="Profile">
         </div>
-
         <div id="json-view">// Terminal Ready...</div>
     </div>
 
     <script>
-        const apiNames = {
-            "num": "NUMBER", "gh": "GITHUB", "insta": "INSTAGRAM", 
-            "tg": "TELEGRAM", "pak": "PAKISTAN NUMBER", "ip": "IP LOOKUP", 
-            "ifsc": "IFSC SEARCH", "pincode": "PINCODE", "email": "EMAIL CHECK", "ff": "FREE FIRE"
-        };
+        const apiNames = { "num": "NUMBER", "gh": "GITHUB", "insta": "INSTAGRAM", "tg": "TELEGRAM", "pak": "PAKISTAN NUMBER", "ip": "IP LOOKUP", "ifsc": "IFSC SEARCH", "pincode": "PINCODE", "email": "EMAIL CHECK", "ff": "FREE FIRE" };
 
         function updateHint() {
             const cmd = document.getElementById('api_cmd').value;
@@ -82,33 +72,22 @@
             hint.innerText = hints[cmd].h;
         }
 
-        const emojiMap = {
-            "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
-            "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
-            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐"
-        };
-
+        const emojiMap = { "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐" };
         const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHint();
-            document.getElementById('search_btn').addEventListener('click', executeSearch);
-        });
+        document.addEventListener('DOMContentLoaded', () => { updateHint(); document.getElementById('search_btn').addEventListener('click', executeSearch); });
 
         async function executeSearch() {
             const cmd = document.getElementById('api_cmd').value;
             const q = document.getElementById('api_query').value;
             const display = document.getElementById('json-view');
             const img = document.getElementById('p-img');
-            
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
             display.innerHTML = `<div style="color:#888">🔍 Searching secure database...</div>`;
-            
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
-                
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${apiNames[cmd]} RESULTS ✨</b><br><br>`;
 
                 function renderResults(dataObj) {
@@ -127,28 +106,25 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
+                        // Improved Key Cleaning: Strict Regex to remove all non-alphanumeric characters from start
+                        let cleanKey = key.replace(/^[^a-zA-Z0-9]+/, '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
-                        // Universal Image Support for GitHub & Others
-                        if (lowerKey.includes("profilepicurl") || lowerKey.includes("avatarurl") || lowerKey.includes("profilepic") || lowerKey.includes("imagebase64") || lowerKey.includes("avatar_url")) {
-                            if (val && (val.startsWith("http") || val.startsWith("data:image"))) {
+                        if (lowerKey.includes("profile pic") || lowerKey.includes("avatar url") || lowerKey.includes("profile pic url") || lowerKey.includes("imagebase64") || lowerKey.includes("avatar_url")) {
+                            if (val && (val.toString().startsWith("http") || val.toString().startsWith("data:image"))) {
                                 img.src = val;
                                 img.style.display = "block";
                             }
                             continue;
                         }
 
-                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
-                            continue;
-                        }
+                        if (hiddenKeys.includes(lowerKey.replace(/\s+/g, '')) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            let emoji = emojiMap[lowerKey] || "🔹";
-                            let displayKey = cleanKey.toUpperCase();
-                            html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
+                            let emoji = emojiMap[lowerKey.replace(/\s+/g, '')] || "🔹";
+                            html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
                             html += processData(val);
                         }
@@ -158,10 +134,7 @@
 
                 const finalHtml = renderResults(data);
                 display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
-
-            } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>";
-            }
+            } catch (e) { display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>"; }
         }
     </script>
 </body>
