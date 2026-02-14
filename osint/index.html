@@ -71,11 +71,10 @@
         const emojiMap = {
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
             "alt": "🔢", "id": "🔹", "address": "🏠", "city": "🌆",
-            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
-            "provider": "🏢", "isp": "📡", "domain": "🌐"
+            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅"
         };
 
-        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server", "breaches found"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
@@ -103,13 +102,6 @@
                         let val = obj[key];
                         let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
-
-                        // Data Breach Logic
-                        if (lowerKey === "breaches found") {
-                            let status = (Array.isArray(val) && val[0].includes("Error")) ? "Not Breached ✅" : "Breached ⚠️";
-                            html += `<b>🛡️ BREACH STATUS:</b> <span style="color:white">${status}</span><br>`;
-                            continue;
-                        }
 
                         if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
                             if (val && val.length > 50) {
