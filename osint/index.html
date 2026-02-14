@@ -48,6 +48,12 @@
     </div>
 
     <script>
+        const apiNames = {
+            "num": "NUMBER", "gh": "GITHUB", "insta": "INSTAGRAM", 
+            "tg": "TELEGRAM", "pak": "PAKISTAN NUMBER", "ip": "IP LOOKUP", 
+            "ifsc": "IFSC SEARCH", "pincode": "PINCODE", "email": "EMAIL CHECK", "ff": "FREE FIRE"
+        };
+
         function updateHint() {
             const cmd = document.getElementById('api_cmd').value;
             const input = document.getElementById('api_query');
@@ -59,7 +65,7 @@
                 "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
                 "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
                 "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
-                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. HDFC0000123" },
+                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
                 "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 110001" },
                 "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com" },
                 "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889" }
@@ -71,11 +77,10 @@
         const emojiMap = {
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
             "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
-            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
-            "circle": "🌐", "username": "📛", "fullname": "👤", "bio": "📝"
+            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐"
         };
 
-        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "key_used", "server"];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
@@ -89,13 +94,14 @@
             
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Accessing deep scan terminal...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
             
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
                 
-                let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
+                // Full API name in header
+                let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${apiNames[cmd]} RESULTS ✨</b><br><br>`;
 
                 function processData(obj) {
                     let html = "";
@@ -119,7 +125,6 @@
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
-                            // Circle aur ID ke liye custom emojis
                             let emoji = emojiMap[lowerKey] || "🔹";
                             let displayKey = cleanKey.toUpperCase();
                             html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
@@ -129,10 +134,10 @@
                 }
 
                 const finalHtml = processData(data);
-                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.2</div></div>`;
+                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan finished.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
 
             } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Error: Terminal Connection Failed.</span>";
+                display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>";
             }
         }
     </script>
