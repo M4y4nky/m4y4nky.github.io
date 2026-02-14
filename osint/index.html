@@ -73,7 +73,6 @@
             input.oninput = (e) => { if (config.numeric) e.target.value = e.target.value.replace(/[^0-9]/g, ''); };
         }
 
-        // Restored Specific Emoji Map
         const emojiMap = { 
             "firstmsgdate": "📅", "first_msg_date": "📅", "lastmsgdate": "📅", "last_msg_date": "📅", 
             "isactive": "⚡", "is_active": "⚡", "isbot": "🤖", "is_bot": "🤖", "msgingroupscount": "✉️", 
@@ -129,10 +128,12 @@
                         } else if (val !== null && val !== "" && !Array.isArray(val)) {
                             let isName = lowerKey.includes("name");
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
+                            
+                            // Specific Label Logic
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
                             
-                            // Blue diamond for IDs and specific icons for others
-                            let emoji = isName ? "👤" : (isIdField ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
+                            // Specific Emoji Logic: ID for Telegram/others, AADHAAR for Phone
+                            let emoji = isName ? "👤" : (isIdField ? "🆔" : (emojiMap[keyNoSpace] || "🔹"));
                             
                             let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
                             html += `<b>${emoji} ${label}:</b> <span style="color:white">${displayVal}</span><br>`;
