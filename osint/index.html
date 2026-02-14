@@ -75,8 +75,8 @@
 
         const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", "followingcount": "🏃", "totalposts": "📸" };
         
-        // Strict list to hide all technical metadata
-        const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound"];
+        // Strict global blocklist for all technical keys
+        const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "processing_time", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound"];
 
         document.addEventListener('DOMContentLoaded', () => { updateHint(); document.getElementById('search_btn').addEventListener('click', executeSearch); });
 
@@ -105,6 +105,7 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
+                        // Regex to clean technical symbols from key
                         let cleanKey = key.replace(/^[^a-zA-Z0-9]+/, '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
                         let keyNoSpace = lowerKey.replace(/\s+/g, '');
@@ -116,8 +117,8 @@
                             continue;
                         }
 
-                        // Privacy & Junk Filters
-                        if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('not found')))) continue;
+                        // Super strict technical data filter
+                        if (hiddenKeys.includes(keyNoSpace) || lowerKey.includes("processing time") || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('not found')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
