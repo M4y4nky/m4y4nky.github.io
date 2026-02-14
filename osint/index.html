@@ -56,10 +56,10 @@
                 "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
                 "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
                 "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck" },
-                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 8490408380" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
                 "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
                 "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
-                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
+                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. HDFC0000123" },
                 "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 110001" },
                 "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com" },
                 "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889" }
@@ -74,7 +74,7 @@
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅"
         };
 
-        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server", "breaches found"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
@@ -88,7 +88,7 @@
             
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Accessing deep secure terminal...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Deep scanning database layers...</div>`;
             
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
@@ -96,16 +96,16 @@
                 
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
 
-                // Smart Recursive Scan to fix [object Object] error
+                // Fix for [object Object] - Deep Scan Recursion
                 function processData(obj) {
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
+                        let cleanKey = key.toString().replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
                         if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
-                            if (val && val.length > 50) {
+                            if (val && typeof val === 'string' && val.length > 50) {
                                 img.src = val;
                                 img.style.display = "block";
                             }
@@ -116,8 +116,9 @@
                             continue;
                         }
 
-                        if (val && typeof val === 'object' && !Array.isArray(val)) {
-                            html += processData(val); // Dig deeper into the nested object
+                        // Recursive call for nested objects/arrays
+                        if (val && typeof val === 'object') {
+                            html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
                             let emoji = emojiMap[lowerKey] || "🔹";
                             let displayKey = cleanKey.toUpperCase();
@@ -128,10 +129,10 @@
                 }
 
                 const finalHtml = processData(data);
-                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan Complete. No Data found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.1</div></div>`;
+                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan Complete. No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.2</div></div>`;
 
             } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Error: Terminal Connection Failed. Check Worker status.</span>";
+                display.innerHTML = "<span style='color:red'>❌ Error: Terminal Connection Failed.</span>";
             }
         }
     </script>
