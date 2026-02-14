@@ -74,7 +74,8 @@
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅"
         };
 
-        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
+        // Branding and Technical keys to ignore
+        const hiddenKeys = ["api", "branding", "key_used", "key used", "server", "buy", "status", "success", "total api usages", "timestamp", "processing time ms", "source", "input"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
@@ -89,7 +90,7 @@
             
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Scanning secure terminal...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Accessing deep scan terminal...</div>`;
             
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
@@ -97,46 +98,43 @@
                 
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
 
-                // FIXED: Deep scan function to fix [object Object]
-                function parseObject(obj) {
+                // NEW: Logic to handle both Arrays and Objects
+                function parseData(item) {
                     let html = "";
-                    for (let key in obj) {
-                        let val = obj[key];
-                        
-                        // Clean key names
-                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
-                        let lowerKey = cleanKey.toLowerCase();
+                    if (Array.isArray(item)) {
+                        item.forEach(subItem => html += parseData(subItem));
+                    } else if (typeof item === 'object' && item !== null) {
+                        for (let key in item) {
+                            let val = item[key];
+                            let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
+                            let lowerKey = cleanKey.toLowerCase();
 
-                        // Skip hidden/promotional keys
-                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
-                            continue;
-                        }
+                            if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && val.includes('@DEVIL'))) continue;
 
-                        // Profile image handling
-                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
-                            if (val && val.length > 50) {
-                                img.src = val;
-                                img.style.display = "block";
+                            if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
+                                if (val && val.length > 50) {
+                                    img.src = val;
+                                    img.style.display = "block";
+                                }
+                                continue;
                             }
-                            continue;
-                        }
 
-                        if (val && typeof val === 'object' && !Array.isArray(val)) {
-                            html += parseObject(val); // Dig deeper into the object
-                        } else if (val !== null && val !== "" && typeof val !== 'boolean') {
-                            let emoji = emojiMap[lowerKey] || "🔹";
-                            let displayKey = cleanKey.toUpperCase();
-                            html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
+                            if (typeof val === 'object') {
+                                html += parseData(val);
+                            } else if (val !== null && val !== "" && typeof val !== 'boolean') {
+                                let emoji = emojiMap[lowerKey] || "🔹";
+                                html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
+                            }
                         }
                     }
                     return html;
                 }
 
-                const finalHtml = parseObject(data);
-                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan finished. No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.1</div></div>`;
+                const finalHtml = parseData(data);
+                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.2</div></div>`;
 
             } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Error: Connection Refused.</span>";
+                display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>";
             }
         }
     </script>
