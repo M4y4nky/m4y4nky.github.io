@@ -102,10 +102,12 @@
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        // Cleaning the key name from emojis or extra spaces
-                        let cleanKeyName = key.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+                        
+                        // Emoji Removal Logic: Strip emojis from the key name
+                        let cleanKey = key.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+                        let lowerKey = cleanKey.toLowerCase();
 
-                        if (cleanKeyName.includes("imagebase64") || cleanKeyName.includes("profilepic")) {
+                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
                             if (val && val.length > 50) {
                                 img.src = val;
                                 img.style.display = "block";
@@ -113,18 +115,15 @@
                             continue;
                         }
 
-                        if (hiddenKeys.includes(cleanKeyName) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
+                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
                             continue;
                         }
 
                         if (val && typeof val === 'object') {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
-                            // Smart ID check for 🆔 ID or raw ID
-                            let emoji = emojiMap[cleanKeyName] || "🔹";
-                            if (cleanKeyName === "id") emoji = "🆔";
-                            
-                            let displayKey = key.toUpperCase();
+                            let emoji = emojiMap[lowerKey] || "🔹";
+                            let displayKey = cleanKey.toUpperCase();
                             html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
                         }
                     }
