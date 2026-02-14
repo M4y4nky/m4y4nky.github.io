@@ -74,10 +74,13 @@
         }
 
         const emojiMap = { 
+            "adm_in_groups": "👮", "admin_groups": "👮", "admingroups": "👮",
             "firstmsgdate": "📅", "first_msg_date": "📅", "lastmsgdate": "📅", "last_msg_date": "📅", 
-            "isactive": "⚡", "is_active": "⚡", "isbot": "🤖", "is_bot": "🤖", "msgingroupscount": "✉️", 
-            "msg_in_groups_count": "✉️", "totalgroups": "👥", "total_groups": "👥", "totalmsgcount": "💬", 
-            "total_msg_count": "💬", "mobile": "📱", "address": "🏠", "city": "🌆", "state": "🗺️", 
+            "isactive": "⚡", "is_active": "⚡", "isbot": "🤖", "is_bot": "🤖", 
+            "msgingroupscount": "✉️", "msg_in_groups_count": "✉️", 
+            "totalgroups": "👥", "total_groups": "👥", 
+            "totalmsgcount": "💬", "total_msg_count": "💬", 
+            "mobile": "📱", "address": "🏠", "city": "🌆", "state": "🗺️", 
             "pincode": "📍", "username": "📛", "totalposts": "📸", "bank": "🏦", "ifsc": "🔑"
         };
         
@@ -128,11 +131,9 @@
                         } else if (val !== null && val !== "" && !Array.isArray(val)) {
                             let isName = lowerKey.includes("name");
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
-                            
-                            // Specific Label Logic
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
                             
-                            // Specific Emoji Logic: ID for Telegram/others, AADHAAR for Phone
+                            // Specific Emoji Logic: Added 👮 for Admin fields
                             let emoji = isName ? "👤" : (isIdField ? "🆔" : (emojiMap[keyNoSpace] || "🔹"));
                             
                             let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
