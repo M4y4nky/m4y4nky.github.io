@@ -12,13 +12,9 @@
         input, select, button { background: #161b22; color: #39ff14; border: 1px solid #30363d; padding: 12px; border-radius: 6px; font-size: 15px; outline: none; }
         button { background: #238636; color: white; cursor: pointer; font-weight: bold; border: none; }
         button:hover { background: #2ea043; box-shadow: 0 0 10px #238636; }
-        
-        /* Hint text styling */
         #input-hint { font-size: 11px; color: #888; margin-top: 5px; padding-left: 5px; }
-
         .img-container { display: flex; justify-content: center; width: 100%; margin: 15px 0; }
         .profile-pic { width: 120px; height: 120px; border: 3px solid #39ff14; border-radius: 50%; display: none; object-fit: cover; box-shadow: 0 0 10px #39ff14; }
-
         #json-view { margin-top: 20px; background: #000; padding: 15px; border: 1px dashed #30363d; border-radius: 6px; white-space: pre-wrap; overflow-x: auto; font-size: 13px; color: #00ff00; min-height: 250px; text-align: left; line-height: 1.8; }
         @media (min-width: 600px) { .controls { flex-direction: row; } select, input { flex: 1; } button { flex: 0.5; } }
     </style>
@@ -41,20 +37,18 @@
             </select>
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <input type="text" id="api_query" placeholder="Enter 10 digit number...">
-                <div id="input-hint">Hint: e.g. 9004008917</div>
+                <div id="input-hint">Hint: e.g. 9876543210</div>
             </div>
             <button id="search_btn">RUN SEARCH</button>
         </div>
-        
         <div class="img-container">
             <img id="p-img" class="profile-pic" src="" alt="Profile">
         </div>
-
         <div id="json-view">// Terminal Ready...</div>
     </div>
 
     <script>
-        // Update hints based on selection
+        // Updated with Random Sample Data
         function updateHint() {
             const cmd = document.getElementById('api_cmd').value;
             const input = document.getElementById('api_query');
@@ -62,15 +56,15 @@
             
             const hints = {
                 "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
-                "gh": { p: "Enter Github username...", h: "Hint: e.g. M4y4nky" },
-                "insta": { p: "Enter Instagram username...", h: "Hint: e.g. m4y4nky" },
-                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 8490408380" },
+                "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
+                "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
                 "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
-                "ip": { p: "Enter IP Address...", h: "Hint: e.g. 1.1.1.1" },
-                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
-                "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 400001" },
-                "email": { p: "Enter Email address...", h: "Hint: e.g. test@gmail.com" },
-                "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 123456789" }
+                "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
+                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. HDFC0000123" },
+                "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 110001" },
+                "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com" },
+                "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889" }
             };
 
             input.placeholder = hints[cmd].p;
@@ -82,8 +76,7 @@
             "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
             "dob": "📅", "gender": "🚻", "username": "📛", "bio": "📝", 
-            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤", 
-            "totalposts": "📄", "first name": "👤", "total msg count": "📊"
+            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤", "totalposts": "📄"
         };
 
         const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input"];
