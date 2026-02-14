@@ -17,9 +17,9 @@
         .profile-pic { width: 120px; height: 120px; border: 3px solid #39ff14; border-radius: 50%; display: none; object-fit: cover; box-shadow: 0 0 10px #39ff14; }
         #json-view { margin-top: 20px; background: #000; padding: 15px; border: 1px dashed #30363d; border-radius: 6px; white-space: pre-wrap; overflow-x: auto; font-size: 13px; color: #00ff00; min-height: 250px; text-align: left; line-height: 1.8; }
         
-        /* New Styling for Multi-Results */
-        .result-item { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #30363d; }
-        .result-item:last-child { border-bottom: none; margin-bottom: 0; }
+        /* Spacing for multiple results */
+        .result-item { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px dashed #30363d; }
+        .result-item:last-child { border-bottom: none; }
         
         @media (min-width: 600px) { .controls { flex-direction: row; } select, input { flex: 1; } button { flex: 0.5; } }
     </style>
@@ -67,7 +67,7 @@
                 "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
                 "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
                 "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck" },
-                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 8490408380" },
                 "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
                 "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
                 "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
@@ -100,7 +100,7 @@
             
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Searching secure database...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
             
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
@@ -108,12 +108,14 @@
                 
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${apiNames[cmd]} RESULTS ✨</b><br><br>`;
 
-                // Fix for multiple results
-                function handleResults(dataObj) {
+                // Fix: Properly handle arrays to prevent [object Object]
+                function renderResults(dataObj) {
                     if (Array.isArray(dataObj)) {
                         return dataObj.map(item => `<div class="result-item">${processData(item)}</div>`).join('');
                     } else if (dataObj.data && Array.isArray(dataObj.data)) {
                         return dataObj.data.map(item => `<div class="result-item">${processData(item)}</div>`).join('');
+                    } else if (dataObj.results && Array.isArray(dataObj.results)) {
+                         return dataObj.results.map(item => `<div class="result-item">${processData(item)}</div>`).join('');
                     }
                     return `<div class="result-item">${processData(dataObj)}</div>`;
                 }
@@ -139,20 +141,22 @@
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
-                        } else if (val !== null && val !== "" && typeof val !== 'boolean') {
+                        } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
                             let emoji = emojiMap[lowerKey] || "🔹";
                             let displayKey = cleanKey.toUpperCase();
                             html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
+                        } else if (Array.isArray(val)) {
+                            html += processData(val); // Dig into arrays
                         }
                     }
                     return html;
                 }
 
-                const finalHtml = handleResults(data);
-                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan finished.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
+                const finalHtml = renderResults(data);
+                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ Scan finished. No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
 
             } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>";
+                display.innerHTML = "<span style='color:red'>❌ Connection Failed. Check Worker.</span>";
             }
         }
     </script>
