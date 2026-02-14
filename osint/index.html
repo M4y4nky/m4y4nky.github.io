@@ -85,7 +85,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Scanning secure database...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -114,14 +114,16 @@
                             continue;
                         }
 
-                        if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('failed to fetch') || val.toLowerCase().includes('not found')))) continue;
+                        // Privacy Filter for User Email
+                        if (val === "mayankguptamzpr@gmail.com") continue;
+
+                        if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('not found')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean' && !Array.isArray(val)) {
-                            // ID emoji updated to blue diamond
-                            let noEmojiKeys = ["name", "fullname"];
-                            let emoji = noEmojiKeys.includes(keyNoSpace) ? "" : (keyNoSpace === "id" ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
+                            // Unified ID format for all APIs
+                            let emoji = (lowerKey === "name" || lowerKey === "fullname") ? "👤" : (keyNoSpace === "id" ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
                             html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
                         } else if (Array.isArray(val)) {
                             html += processData(val);
