@@ -48,13 +48,6 @@
     </div>
 
     <script>
-        // Mapping for full header names
-        const fullNames = {
-            "num": "NUMBER", "gh": "GITHUB", "insta": "INSTAGRAM", 
-            "tg": "TELEGRAM", "pak": "PAKISTAN NUMBER", "ip": "IP LOOKUP", 
-            "ifsc": "IFSC", "pincode": "PINCODE", "email": "EMAIL", "ff": "FREE FIRE"
-        };
-
         function updateHint() {
             const cmd = document.getElementById('api_cmd').value;
             const input = document.getElementById('api_query');
@@ -79,16 +72,10 @@
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
             "alt": "🔢", "id": "🔹", "address": "🏠", "city": "🌆",
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
-            "dob": "📅", "gender": "🚻", "username": "📛", "bio": "📝", 
-            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤"
+            "provider": "🏢", "isp": "📡", "domain": "🌐"
         };
 
-        const hiddenKeys = [
-            "api", "buy key", "developer", "credit", "owner", "key", 
-            "telegram", "author", "api version", "api_version", "success", 
-            "service", "total api usages", "timestamp", "processing time ms", 
-            "source", "input", "key used", "key_used", "server"
-        ];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "server"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
@@ -108,9 +95,7 @@
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
                 
-                // Using full names for header
-                const headerName = fullNames[cmd] || cmd.toUpperCase();
-                let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${headerName} RESULTS ✨</b><br><br>`;
+                let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
 
                 function processData(obj) {
                     let html = "";
@@ -118,6 +103,13 @@
                         let val = obj[key];
                         let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
+
+                        // Data Breach Logic
+                        if (lowerKey === "breaches found") {
+                            let status = (Array.isArray(val) && val[0].includes("Error")) ? "Not Breached ✅" : "Breached ⚠️";
+                            html += `<b>🛡️ BREACH STATUS:</b> <span style="color:white">${status}</span><br>`;
+                            continue;
+                        }
 
                         if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
                             if (val && val.length > 50) {
@@ -131,7 +123,7 @@
                             continue;
                         }
 
-                        if (val && typeof val === 'object') {
+                        if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'boolean') {
                             let emoji = emojiMap[lowerKey] || "🔹";
