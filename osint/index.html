@@ -73,10 +73,13 @@
             input.oninput = (e) => { if (config.numeric) e.target.value = e.target.value.replace(/[^0-9]/g, ''); };
         }
 
+        // Expanded Emoji Map for IFSC and IP
         const emojiMap = { 
             "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", 
             "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", 
-            "followingcount": "🏃", "totalposts": "📸", "isactive": "⚡", "isbot": "🤖", "totalmsgcount": "💬", "totalgroups": "👥" 
+            "followingcount": "🏃", "totalposts": "📸", "isactive": "⚡", "isbot": "🤖", "totalmsgcount": "💬", 
+            "totalgroups": "👥", "bank": "🏦", "branch": "🏢", "ifsc": "🔑", "micr": "📟", "district": "📍", 
+            "isp": "📡", "org": "🏢", "as": "⚙️", "country": "🌍", "countrycode": "🏳️", "lat": "📐", "lon": "📏", "timezone": "🕒"
         };
         
         const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound", "endpoint"];
@@ -90,7 +93,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Scrutinizing data packets...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Scrutinizing database records...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -126,12 +129,13 @@
                         } else if (val !== null && val !== "" && !Array.isArray(val)) {
                             let isName = lowerKey.includes("name");
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
+                            
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
+                            
+                            // Emoji logic updated for IP and IFSC
                             let emoji = isName ? "👤" : (isIdField ? "🔹" : (emojiMap[keyNoSpace] || "🔹"));
                             
-                            // Handling Boolean values (true/false)
                             let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
-                            
                             html += `<b>${emoji} ${label}:</b> <span style="color:white">${displayVal}</span><br>`;
                         }
                     }
@@ -139,7 +143,7 @@
                 }
 
                 const finalHtml = renderResults(data);
-                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ USER NOT FOUND.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
+                display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ DATA NOT FOUND.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
             } catch (e) { display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>"; }
         }
     </script>
