@@ -73,13 +73,13 @@
             input.oninput = (e) => { if (config.numeric) e.target.value = e.target.value.replace(/[^0-9]/g, ''); };
         }
 
-        // Master Emoji Map for all 10 APIs
+        // Updated Master Emoji Map
         const emojiMap = { 
             "firstmsgdate": "📅", "lastmsgdate": "📅", "isactive": "⚡", "isbot": "🤖", 
             "msgingroupscount": "✉️", "totalgroups": "👥", "totalmsgcount": "💬",
-            "admin_groups": "👮", "admingroups": "👮", "adm_in_groups": "👮",
+            "admin_groups": "👮", "adminingroups": "👮",
             "mobile": "📱", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", 
-            "username": "📛", "totalposts": "📸", "bank": "🏦", "ifsc": "🔑", "branch": "🏢",
+            "alt": "🔢", "circle": "🌐", "username": "📛", "totalposts": "📸", "bank": "🏦", "ifsc": "🔑", 
             "isp": "📡", "org": "🏢", "country": "🌍", "timezone": "🕒", "publicrepos": "📂",
             "followers": "👥", "following": "🏃", "createdat": "📅", "level": "🆙", "rank": "🎖️"
         };
@@ -128,14 +128,12 @@
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
                             html += processData(val); 
                         } else if (val !== null && val !== "" && typeof val !== 'undefined' && !Array.isArray(val)) {
-                            let isName = lowerKey.includes("name");
+                            let isName = lowerKey.includes("name") || lowerKey.includes("fname");
                             let isIdField = keyNoSpace === "id" || lowerKey === "aadhaar";
                             
-                            // Label Logic
                             let label = (isIdField && cmd === "num") ? "AADHAAR" : (isIdField ? "ID" : cleanKey.toUpperCase());
                             if (keyNoSpace === "adminingroups" || keyNoSpace === "admingroups") label = "ADMIN IN GROUPS";
                             
-                            // Emoji Logic
                             let emoji = isName ? "👤" : (isIdField ? "🆔" : (emojiMap[keyNoSpace] || "🔹"));
                             let displayVal = (typeof val === 'boolean') ? (val ? "YES" : "NO") : val;
                             
