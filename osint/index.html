@@ -36,7 +36,7 @@
                 <option value="ff">🎮 FREE FIRE</option>
             </select>
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <input type="text" id="api_query" placeholder="Enter target...">
+                <input type="text" id="api_query" placeholder="Enter 10 digit number...">
                 <div id="input-hint">Hint: e.g. 9876543210</div>
             </div>
             <button id="search_btn">RUN SEARCH</button>
@@ -56,10 +56,10 @@
                 "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
                 "gh": { p: "Enter Github username...", h: "Hint: e.g. torvalds" },
                 "insta": { p: "Enter Instagram username...", h: "Hint: e.g. zuck" },
-                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 8490408380" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 123456789" },
                 "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
                 "ip": { p: "Enter IP Address...", h: "Hint: e.g. 8.8.8.8" },
-                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
+                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. HDFC0000123" },
                 "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 110001" },
                 "email": { p: "Enter Email address...", h: "Hint: e.g. user@example.com" },
                 "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 556677889" }
@@ -70,16 +70,15 @@
 
         const emojiMap = {
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
-            "alt": "🔢", "id": "🔹", "address": "🏠", "city": "🌆",
-            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅"
+            "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
+            "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
+            "circle": "🌐", "username": "📛", "fullname": "👤", "bio": "📝"
         };
 
-        // Branding and Technical keys to ignore
-        const hiddenKeys = ["api", "branding", "key_used", "key used", "server", "buy", "status", "success", "total api usages", "timestamp", "processing time ms", "source", "input"];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input", "key used", "key_used", "server"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
-            updateHint();
         });
 
         async function executeSearch() {
@@ -98,43 +97,42 @@
                 
                 let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
 
-                // NEW: Logic to handle both Arrays and Objects
-                function parseData(item) {
+                function processData(obj) {
                     let html = "";
-                    if (Array.isArray(item)) {
-                        item.forEach(subItem => html += parseData(subItem));
-                    } else if (typeof item === 'object' && item !== null) {
-                        for (let key in item) {
-                            let val = item[key];
-                            let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
-                            let lowerKey = cleanKey.toLowerCase();
+                    for (let key in obj) {
+                        let val = obj[key];
+                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
+                        let lowerKey = cleanKey.toLowerCase();
 
-                            if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && val.includes('@DEVIL'))) continue;
-
-                            if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
-                                if (val && val.length > 50) {
-                                    img.src = val;
-                                    img.style.display = "block";
-                                }
-                                continue;
+                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
+                            if (val && val.length > 50) {
+                                img.src = val;
+                                img.style.display = "block";
                             }
+                            continue;
+                        }
 
-                            if (typeof val === 'object') {
-                                html += parseData(val);
-                            } else if (val !== null && val !== "" && typeof val !== 'boolean') {
-                                let emoji = emojiMap[lowerKey] || "🔹";
-                                html += `<b>${emoji} ${cleanKey.toUpperCase()}:</b> <span style="color:white">${val}</span><br>`;
-                            }
+                        if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
+                            continue;
+                        }
+
+                        if (val && typeof val === 'object' && !Array.isArray(val)) {
+                            html += processData(val); 
+                        } else if (val !== null && val !== "" && typeof val !== 'boolean') {
+                            // Circle aur ID ke liye custom emojis
+                            let emoji = emojiMap[lowerKey] || "🔹";
+                            let displayKey = cleanKey.toUpperCase();
+                            html += `<b>${emoji} ${displayKey}:</b> <span style="color:white">${val}</span><br>`;
                         }
                     }
                     return html;
                 }
 
-                const finalHtml = parseData(data);
+                const finalHtml = processData(data);
                 display.innerHTML = formattedOutput + (finalHtml || `<span style="color:red">⚠️ No Data Found.</span>`) + `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.2</div></div>`;
 
             } catch (e) {
-                display.innerHTML = "<span style='color:red'>❌ Connection Failed.</span>";
+                display.innerHTML = "<span style='color:red'>❌ Error: Terminal Connection Failed.</span>";
             }
         }
     </script>
