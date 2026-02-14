@@ -48,6 +48,13 @@
     </div>
 
     <script>
+        // Mapping for full header names
+        const fullNames = {
+            "num": "NUMBER", "gh": "GITHUB", "insta": "INSTAGRAM", 
+            "tg": "TELEGRAM", "pak": "PAKISTAN NUMBER", "ip": "IP LOOKUP", 
+            "ifsc": "IFSC", "pincode": "PINCODE", "email": "EMAIL", "ff": "FREE FIRE"
+        };
+
         function updateHint() {
             const cmd = document.getElementById('api_cmd').value;
             const input = document.getElementById('api_query');
@@ -70,21 +77,21 @@
 
         const emojiMap = {
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
-            "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
+            "alt": "🔢", "id": "🔹", "address": "🏠", "city": "🌆",
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
             "dob": "📅", "gender": "🚻", "username": "📛", "bio": "📝", 
-            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤",
-            "avatar_url": "🖼️", // Added for GitHub profile image
-            "avatar url": "🖼️", // Also include space-separated version if needed
-            "profile image": "🖼️", // Generic for any profile image
-            "profile_image_url": "🖼️"
+            "followerscount": "👥", "followingcount": "🏃", "fullname": "👤"
         };
 
-        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input"];
+        const hiddenKeys = [
+            "api", "buy key", "developer", "credit", "owner", "key", 
+            "telegram", "author", "api version", "api_version", "success", 
+            "service", "total api usages", "timestamp", "processing time ms", 
+            "source", "input", "key used", "key_used", "server"
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
-            updateHint(); // Set initial hint
         });
 
         async function executeSearch() {
@@ -101,20 +108,19 @@
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
                 
-                let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${cmd.toUpperCase()} RESULTS ✨</b><br><br>`;
+                // Using full names for header
+                const headerName = fullNames[cmd] || cmd.toUpperCase();
+                let formattedOutput = `<div><b style="color:white; font-size:16px;">✨ ${headerName} RESULTS ✨</b><br><br>`;
 
                 function processData(obj) {
                     let html = "";
                     for (let key in obj) {
                         let val = obj[key];
-                        
-                        // Strict Emoji Stripping Logic
-                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim(); 
+                        let cleanKey = key.replace(/[^a-zA-Z0-9_\s]/g, '').replace(/_/g, ' ').trim();
                         let lowerKey = cleanKey.toLowerCase();
 
-                        // Check for various forms of image URLs
-                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic") || lowerKey.includes("avatarurl") || lowerKey.includes("profileimageurl")) {
-                            if (val && typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:image'))) {
+                        if (lowerKey.includes("imagebase64") || lowerKey.includes("profilepic")) {
+                            if (val && val.length > 50) {
                                 img.src = val;
                                 img.style.display = "block";
                             }
