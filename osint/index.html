@@ -13,6 +13,9 @@
         button { background: #238636; color: white; cursor: pointer; font-weight: bold; border: none; }
         button:hover { background: #2ea043; box-shadow: 0 0 10px #238636; }
         
+        /* Hint text styling */
+        #input-hint { font-size: 11px; color: #888; margin-top: 5px; padding-left: 5px; }
+
         .img-container { display: flex; justify-content: center; width: 100%; margin: 15px 0; }
         .profile-pic { width: 120px; height: 120px; border: 3px solid #39ff14; border-radius: 50%; display: none; object-fit: cover; box-shadow: 0 0 10px #39ff14; }
 
@@ -24,7 +27,7 @@
     <div class="box">
         <h3>💠 M4Y4NKY OSINT TERMINAL</h3>
         <div class="controls">
-            <select id="api_cmd">
+            <select id="api_cmd" onchange="updateHint()">
                 <option value="num">📱 PHONE (IN)</option>
                 <option value="gh">📂 GITHUB</option>
                 <option value="insta">📸 INSTAGRAM</option>
@@ -36,7 +39,10 @@
                 <option value="email">📧 EMAIL CHECK</option>
                 <option value="ff">🎮 FREE FIRE</option>
             </select>
-            <input type="text" id="api_query" placeholder="Enter target data...">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <input type="text" id="api_query" placeholder="Enter 10 digit number...">
+                <div id="input-hint">Hint: e.g. 9004008917</div>
+            </div>
             <button id="search_btn">RUN SEARCH</button>
         </div>
         
@@ -48,23 +54,39 @@
     </div>
 
     <script>
+        // Update hints based on selection
+        function updateHint() {
+            const cmd = document.getElementById('api_cmd').value;
+            const input = document.getElementById('api_query');
+            const hint = document.getElementById('input-hint');
+            
+            const hints = {
+                "num": { p: "Enter 10 digit number...", h: "Hint: e.g. 9876543210" },
+                "gh": { p: "Enter Github username...", h: "Hint: e.g. M4y4nky" },
+                "insta": { p: "Enter Instagram username...", h: "Hint: e.g. m4y4nky" },
+                "tg": { p: "Enter Telegram UserID...", h: "Hint: e.g. 8490408380" },
+                "pak": { p: "Enter 11 digit Pak number...", h: "Hint: e.g. 03001234567" },
+                "ip": { p: "Enter IP Address...", h: "Hint: e.g. 1.1.1.1" },
+                "ifsc": { p: "Enter IFSC Code...", h: "Hint: e.g. SBIN0001234" },
+                "pincode": { p: "Enter 6 digit Pincode...", h: "Hint: e.g. 400001" },
+                "email": { p: "Enter Email address...", h: "Hint: e.g. test@gmail.com" },
+                "ff": { p: "Enter Free Fire UID...", h: "Hint: e.g. 123456789" }
+            };
+
+            input.placeholder = hints[cmd].p;
+            hint.innerText = hints[cmd].h;
+        }
+
         const emojiMap = {
             "name": "👤", "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱",
             "alt": "🔢", "id": "🆔", "address": "🏠", "city": "🌆",
             "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅",
             "dob": "📅", "gender": "🚻", "username": "📛", "bio": "📝", 
             "followerscount": "👥", "followingcount": "🏃", "fullname": "👤", 
-            "totalposts": "📄", "first name": "👤", "total msg count": "📊",
-            "total groups": "👥", "adm in groups": "🛡️"
+            "totalposts": "📄", "first name": "👤", "total msg count": "📊"
         };
 
-        // Added "source" and "input" to hidden list
-        const hiddenKeys = [
-            "api", "buy key", "developer", "credit", "owner", "key", 
-            "telegram", "author", "api version", "api_version", "success", 
-            "service", "total api usages", "total_api_usages", "timestamp", 
-            "processing time ms", "processing_time_ms", "source", "input"
-        ];
+        const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram", "author", "api version", "api_version", "success", "service", "total api usages", "timestamp", "processing time ms", "source", "input"];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search_btn').addEventListener('click', executeSearch);
@@ -101,7 +123,6 @@
                             continue;
                         }
 
-                        // Filtering logic for promotional and technical keys
                         if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
                             continue;
                         }
