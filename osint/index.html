@@ -48,7 +48,6 @@
             "ip": "🌐", "org": "🏢", "country": "🌍", "uid": "🎮"
         };
 
-        // Yeh keys aur unke andar ka promotional text block hoga
         const hiddenKeys = ["api", "buy key", "developer", "credit", "owner", "key", "telegram"];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -76,7 +75,6 @@
                         let val = obj[key];
                         let lowerKey = key.toLowerCase();
 
-                        // Promotional content filter logic
                         if (hiddenKeys.includes(lowerKey) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan')))) {
                             continue;
                         }
@@ -94,7 +92,8 @@
 
                 const finalHtml = processData(data);
                 formattedOutput += finalHtml || `<span style="color:red">⚠️ Limit Reached or No Records Found.</span>`;
-                formattedOutput += `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v2.5</div></div>`;
+                // Version changed to v1.0
+                formattedOutput += `<br><div style="border-top:1px solid #30363d; padding-top:10px; color:#555; font-size:11px;">🤖 M4y4nky-OSINT Terminal v1.0</div></div>`;
                 
                 display.innerHTML = formattedOutput;
 
