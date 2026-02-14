@@ -16,7 +16,6 @@
         .img-container { display: flex; justify-content: center; width: 100%; margin: 15px 0; }
         .profile-pic { width: 120px; height: 120px; border: 3px solid #39ff14; border-radius: 50%; display: none; object-fit: cover; box-shadow: 0 0 10px #39ff14; }
         #json-view { margin-top: 20px; background: #000; padding: 15px; border: 1px dashed #30363d; border-radius: 6px; white-space: pre-wrap; overflow-x: auto; font-size: 13px; color: #00ff00; min-height: 250px; text-align: left; line-height: 1.8; }
-        
         .result-item { margin-bottom: 35px; padding-bottom: 20px; border-bottom: 1px dashed #30363d; }
         .result-item:last-child { border-bottom: none; margin-bottom: 0; }
         @media (min-width: 600px) { .controls { flex-direction: row; } select, input { flex: 1; } button { flex: 0.5; } }
@@ -75,6 +74,8 @@
         }
 
         const emojiMap = { "fname": "👨‍👦", "mname": "👩‍👦", "mobile": "📱", "alt": "🔢", "address": "🏠", "city": "🌆", "state": "🗺️", "pincode": "📍", "email": "📧", "status": "✅", "circle": "🌐", "username": "📛", "followerscount": "👥", "followingcount": "🏃", "totalposts": "📸" };
+        
+        // Strict list to hide all technical metadata
         const hiddenKeys = ["api", "buykey", "developer", "credit", "owner", "key", "telegram", "author", "apiversion", "api_version", "success", "service", "totalapiusages", "total_api_usages", "timestamp", "processingtime", "processingtime_ms", "processing_time_ms", "source", "input", "keyused", "server", "message", "error", "failurecode", "failure_code", "breachesfound"];
 
         document.addEventListener('DOMContentLoaded', () => { updateHint(); document.getElementById('search_btn').addEventListener('click', executeSearch); });
@@ -86,7 +87,7 @@
             const img = document.getElementById('p-img');
             if(!q) return alert("Bhai, data toh daalo!");
             img.style.display = "none";
-            display.innerHTML = `<div style="color:#888">🔍 Searching secure database...</div>`;
+            display.innerHTML = `<div style="color:#888">🔍 Running deep scan...</div>`;
             try {
                 const res = await fetch(`https://m4y4nky-api.m4y4nky.workers.dev/?cmd=${cmd}&q=${q}`);
                 const data = await res.json();
@@ -115,6 +116,7 @@
                             continue;
                         }
 
+                        // Privacy & Junk Filters
                         if (hiddenKeys.includes(keyNoSpace) || (typeof val === 'string' && (val.includes('@DEVIL') || val.includes('upgrade plan') || val.toLowerCase().includes('not found')))) continue;
 
                         if (val && typeof val === 'object' && !Array.isArray(val)) {
