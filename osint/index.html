@@ -52,7 +52,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .card-tag { color: var(--accent); font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
         .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .data-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; }
+        .data-grid { display: grid; grid-template-columns: 120px 1fr; gap: 6px 10px; }
         .label { color: var(--dim); font-size: 11px; }
         .val { color: var(--text); word-break: break-all; line-height: 1.4; }
 
@@ -168,10 +168,8 @@
                             <span class="label">Father:</span><span class="val">${p.fname || "N/A"}</span>
                             <span class="label">Identity ID:</span><span class="val" style="color:var(--accent)">${p.id || "N/A"}</span>
                             <span class="label">Target:</span><span class="val" style="color:var(--accent)">${p.mobile || "N/A"}</span>
-                            <span class="label">Alt Number:</span><span class="val">${p.alt || "N/A"}</span>
                             <span class="label">Email:</span><span class="val">${p.email || "N/A"}</span>
-                            <span class="label">Circle:</span><span class="val" style="color:var(--green)">${p.circle || "N/A"}</span>
-                            <span class="label">Address:</span><span class="val" style="font-size:10px; line-height:1.2;">${cleanAddr}</span>
+                            <span class="label">Address:</span><span class="val" style="font-size:10px;">${cleanAddr}</span>
                         </div>
                         <button class="toggle-btn" onclick="toggleJson('${innerBoxId}')">toggle_raw</button>
                         <div class="json-raw-box" id="${innerBoxId}">${JSON.stringify(p, null, 2)}</div>
@@ -180,39 +178,38 @@
             } else if (type === "github") {
                 if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
                 
+                // ULTIMATE DEEP SCAN: Fetch Email from all Public Events
                 let extractedEmail = "Private/Hidden";
                 try {
-                    // Step 1: Get Repositories
-                    const reposRes = await fetch(`https://api.github.com/users/${data.login}/repos?sort=updated&per_page=1`);
-                    const repos = await reposRes.json();
+                    const eventRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
+                    const events = await eventRes.json();
                     
-                    if(repos.length > 0) {
-                        const repoName = repos[0].name;
-                        // Step 2: Get Commits (using .patch style scraping via API)
-                        const commitRes = await fetch(`https://api.github.com/repos/${data.login}/${repoName}/commits?per_page=5`);
-                        const commits = await commitRes.json();
-                        
-                        for(let c of commits) {
-                            if(c.commit && c.commit.author && c.commit.author.email) {
-                                let email = c.commit.author.email;
-                                if(!email.includes("noreply") && email.includes("@")) {
-                                    extractedEmail = email;
+                    // Har event ko check karo jab tak email na mile
+                    for(let e of events) {
+                        if(e.type === "PushEvent" && e.payload.commits) {
+                            for(let commit of e.payload.commits) {
+                                let mail = commit.author.email;
+                                if(mail && !mail.includes("noreply") && mail.includes("@")) {
+                                    extractedEmail = mail;
                                     break;
                                 }
                             }
                         }
+                        if(extractedEmail !== "Private/Hidden") break;
                     }
-                } catch(e) { console.error("Email Scraping Error:", e); }
+                    // Agar events mein nahi mila, profile email fallback
+                    if(extractedEmail === "Private/Hidden") extractedEmail = data.email || "Private/Hidden";
+                } catch(e) { extractedEmail = data.email || "Private/Hidden"; }
 
                 print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
                     <div class="data-grid">
                         <span class="label">Identity:</span><span class="val" style="color:var(--green)">${data.name || "N/A"}</span>
                         <span class="label">Login:</span><span class="val" style="color:var(--accent)">${data.login}</span>
-                        <span class="label">GitHub ID:</span><span class="val">${data.id}</span>
                         <span class="label">Intelligence:</span><span class="val" style="color:var(--green); font-weight:bold;">${extractedEmail}</span>
+                        <span class="label">Asset Count:</span><span class="val">${data.public_repos} Repositories</span>
                         <span class="label">Network:</span><span class="val">${data.followers} Followers / ${data.following} Following</span>
-                        <span class="label">Assets:</span><span class="val">${data.public_repos} Repos</span>
                         <span class="label">Created:</span><span class="val v-dim">${getDetailedTime(data.created_at)}</span>
+                        <span class="label">Last Activity:</span><span class="val v-dim">${getDetailedTime(data.updated_at)}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
