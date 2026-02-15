@@ -35,11 +35,11 @@
 
         .screen { flex: 1; padding: 20px; overflow-y: auto; scrollbar-width: none; color: var(--text); font-size: 13px; }
         .screen::-webkit-scrollbar { display: none; }
-
+        
         .startup-header { margin-bottom: 25px; border-left: 2px solid var(--accent); padding-left: 15px; }
         .brand { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-bottom: 5px; }
         .version-tag { font-size: 10px; background: var(--accent); color: #111; padding: 1px 6px; border-radius: 3px; font-weight: 900; vertical-align: middle; }
-
+        
         .sys-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
         .sys-item { font-size: 10px; color: var(--dim); }
         .sys-item span { color: var(--green); font-weight: bold; }
@@ -78,7 +78,7 @@
             <div class="sys-info">
                 <div class="sys-item">CONNECTION: <span>SECURE</span></div>
                 <div class="sys-item">DATABASE: <span>ONLINE</span></div>
-                <div class="sys-item">PROXY: <span>ENCRYPTED</span></div>
+                <div class="sys-item">PROXY: <span>BYPASS</span></div>
                 <div class="sys-item">SESSION: <span id="uptime">0s</span></div>
             </div>
         </div>
@@ -108,6 +108,8 @@
     const screen = document.getElementById("screen");
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
+
+    // YAHAN APNA VERCEL BACKEND URL DALO
     const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
 
     function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
@@ -123,85 +125,41 @@
     const getDetailedTime = (dateStr) => {
         if(!dateStr) return "N/A";
         const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
-        if (isNaN(date.getTime())) return "N/A";
-        const minsT = Math.floor(diff / (1000 * 60)), hrsT = Math.floor(diff / (1000 * 60 * 60)), daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
-        const days = daysT % 365, hrs = hrsT % 24, mins = minsT % 60;
-        let p = [];
-        if (yrs > 0) p.push(`${yrs}y`); if (days > 0) p.push(`${days}d`); if (hrs > 0) p.push(`${hrs}h`); if (mins > 0) p.push(`${mins}m`);
-        return p.length > 0 ? p.join(" ") + " ago" : "Just now";
+        const daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
+        return yrs > 0 ? `${yrs}y ago` : `${daysT}d ago`;
     };
 
     async function startSearch() {
         const type = moduleSelect.value, value = targetInput.value.trim();
-        if (type === "phone" && (value.length !== 10 || isNaN(value))) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number length.</span>`); return; }
-        if (!value) { print(`<span style='color:var(--red)'><br>[!] ERR_NULL: Input required.</span>`); return; }
-        targetInput.value = "";
+        if (!value) return;
+        targetInput.value = ""; 
         print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
             const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
             let data = await res.json();
 
-            if (type === "phone") {
-                if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
+            if (type === "phone" && data.results) {
                 data.results.forEach((p, i) => {
-                    const boxId = `json_ph_${Date.now()}_${i}`;
-                    let cleanAddr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, " ").replace(/\s+/g, " ");
+                    const boxId = `json_${Date.now()}_${i}`;
                     print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
                         <div class="data-grid">
-                            <span class="label">Target:</span><span class="val v-blue">${p.mobile || "N/A"}</span>
                             <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
-                            <span class="label">Father Name:</span><span class="val">${p.fname || "N/A"}</span>
-                            <span class="label">Alt Number:</span><span class="val v-blue">${p.alt || "N/A"}</span>
-                            <span class="label">Identity ID:</span><span class="val v-blue">${p.id || "N/A"}</span>
-                            <span class="label">Email:</span><span class="val">${p.email || "N/A"}</span>
+                            <span class="label">Number:</span><span class="val">${p.mobile || "N/A"}</span>
                             <span class="label">Circle:</span><span class="val">${p.circle || "N/A"}</span>
-                            <span class="label">Address:</span><span class="val">${cleanAddr}</span>
+                            <span class="label">Address:</span><span class="val">${p.address || "N/A"}</span>
                         </div>
                         <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                         <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
                     </div>`);
                 });
-            } else if (type === "github") {
-                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
-                const boxId = `json_git_${Date.now()}`;
-                const isReal = (e) => e && !e.includes("noreply");
-                let displayMail = isReal(data.email) ? data.email : (isReal(data.recovered_email) ? data.recovered_email : "Private/Hidden");
-                print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
-                    <div class="data-grid">
-                        <span class="label">Login:</span><span class="val" style="color:var(--green)">${data.login}</span>
-                        <span class="label">UID:</span><span class="val v-blue">${data.id || "N/A"}</span>
-                        <span class="label">Intelligence:</span><span class="val v-blue">${displayMail}</span>
-                        <span class="label">Created:</span><span class="val">${getDetailedTime(data.created_at)}</span>
-                        <span class="label">Last Push:</span><span class="val" style="color:var(--green)">${getDetailedTime(data.updated_at)}</span>
-                    </div>
-                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
-                </div>`);
-            } else if (type === "telegram") {
-                if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
-                const tg = data.data.data;
-                const boxId = `json_tg_${Date.now()}`;
-                const accountAge = tg.first_msg_date ? new Date(tg.first_msg_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : "N/A";
-
-                print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
-                    <div class="data-grid">
-                        <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
-                        <span class="label">First Name:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
-                        <span class="label">Names History:</span><span class="val">${tg.names_count || 1} records</span>
-                        <span class="label">Usernames:</span><span class="val">${tg.usernames_count || 0} recorded</span>
-                        <span class="label">Msgs Trace:</span><span class="val v-blue">${tg.total_msg_count?.toLocaleString() || 0}</span>
-                        <span class="label">Groups:</span><span class="val">${tg.total_groups || 0} (Adm: ${tg.adm_in_groups || 0})</span>
-                        <span class="label">Activity:</span><span class="val">${tg.msg_in_groups_count || 0} in groups</span>
-                        <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
-                        <span class="label">First Seen:</span><span class="val v-dim">${accountAge}</span>
-                        <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
-                    </div>
-                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
+            } else {
+                const boxId = `json_${Date.now()}`;
+                print(`<div class="intel-card"><span class="card-tag">${type.toUpperCase()} Intelligence</span>
+                    <pre style="font-size:10px; color:var(--text)">${JSON.stringify(data, null, 2)}</pre>
                 </div>`);
             }
-        } catch (e) { print(`<span style='color:var(--red)'><br>[!] CRITICAL_ERROR: ${e.message}</span>`); }
+        } catch (e) { print(`<span style='color:var(--red)'><br>[!] ERR: ${e.message}</span>`); }
     }
     targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
