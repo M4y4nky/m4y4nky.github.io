@@ -92,7 +92,7 @@
                 <option value="github">GITHUB</option>
                 <option value="telegram">TELEGRAM</option>
             </select>
-            <input id="target" type="text" placeholder="Enter 10-digit number..." maxlength="10" inputmode="numeric">
+            <input id="target" type="text" placeholder="Enter 10-digit number..." maxlength="10" inputmode="numeric" oninput="validateInput(this)">
             <button class="search-btn" onclick="startSearch()">SCAN</button>
         </div>
     </div>
@@ -110,44 +110,98 @@
     const moduleSelect = document.getElementById("module");
     const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
 
+    function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
     function updateUI() {
         targetInput.value = ""; const type = moduleSelect.value;
-        if (type === "phone") { 
-            targetInput.placeholder = "Enter 10-digit number..."; 
-            targetInput.maxLength = 10; 
-            targetInput.setAttribute("inputmode", "numeric"); 
-        } else { 
-            targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); 
-            targetInput.maxLength = 40; 
-            targetInput.setAttribute("inputmode", "text"); 
-        }
+        if (type === "phone") { targetInput.placeholder = "Enter 10-digit number..."; targetInput.maxLength = 10; targetInput.inputmode = "numeric"; }
+        else { targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); targetInput.maxLength = 40; targetInput.inputmode = "text"; }
     }
-
-    targetInput.oninput = function() {
-        if (moduleSelect.value === "phone") {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        }
-    };
 
     function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
     function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
 
+    const getDetailedTime = (dateStr) => {
+        if(!dateStr) return "N/A";
+        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
+        if (isNaN(date.getTime())) return "N/A";
+        const minsT = Math.floor(diff / (1000 * 60)), hrsT = Math.floor(diff / (1000 * 60 * 60)), daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
+        const days = daysT % 365, hrs = hrsT % 24, mins = minsT % 60;
+        let p = [];
+        if (yrs > 0) p.push(`${yrs}y`); if (days > 0) p.push(`${days}d`); if (hrs > 0) p.push(`${hrs}h`); if (mins > 0) p.push(`${mins}m`);
+        return p.length > 0 ? p.join(" ") + " ago" : "Just now";
+    };
+
     async function startSearch() {
         const type = moduleSelect.value, value = targetInput.value.trim();
-        if (!value) return;
+        if (type === "phone" && (value.length !== 10 || isNaN(value))) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number length.</span>`); return; }
+        if (!value) { print(`<span style='color:var(--red)'><br>[!] ERR_NULL: Input required.</span>`); return; }
         targetInput.value = "";
         print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
+            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
             let data = await res.json();
-            const boxId = `json_${Date.now()}`;
 
-            // Seedha raw data display kyunki master mein formatting ki zaroorat nahi thi
-            print(`<div class="intel-card"><span class="card-tag">Profile Data</span>
-                <pre style="font-size:10px; color:var(--green);">${JSON.stringify(data, null, 2)}</pre>
-            </div>`);
-        } catch (e) { print(`<span style='color:var(--red)'><br>[!] ERR: Connection Failed.</span>`); }
+            if (type === "phone") {
+                if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
+                data.results.forEach((p, i) => {
+                    const boxId = `json_ph_${Date.now()}_${i}`;
+                    let cleanAddr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, " ").replace(/\s+/g, " ");
+                    print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
+                        <div class="data-grid">
+                            <span class="label">Target:</span><span class="val v-blue">${p.mobile || "N/A"}</span>
+                            <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
+                            <span class="label">Father Name:</span><span class="val">${p.fname || "N/A"}</span>
+                            <span class="label">Alt Number:</span><span class="val v-blue">${p.alt || "N/A"}</span>
+                            <span class="label">Identity ID:</span><span class="val v-blue">${p.id || "N/A"}</span>
+                            <span class="label">Email:</span><span class="val">${p.email || "N/A"}</span>
+                            <span class="label">Circle:</span><span class="val">${p.circle || "N/A"}</span>
+                            <span class="label">Address:</span><span class="val">${cleanAddr}</span>
+                        </div>
+                        <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
+                        <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
+                    </div>`);
+                });
+            } else if (type === "github") {
+                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
+                const boxId = `json_git_${Date.now()}`;
+                const isReal = (e) => e && !e.includes("noreply");
+                let displayMail = isReal(data.email) ? data.email : (isReal(data.recovered_email) ? data.recovered_email : "Private/Hidden");
+                print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
+                    <div class="data-grid">
+                        <span class="label">Login:</span><span class="val" style="color:var(--green)">${data.login}</span>
+                        <span class="label">UID:</span><span class="val v-blue">${data.id || "N/A"}</span>
+                        <span class="label">Intelligence:</span><span class="val v-blue">${displayMail}</span>
+                        <span class="label">Created:</span><span class="val">${getDetailedTime(data.created_at)}</span>
+                        <span class="label">Last Push:</span><span class="val" style="color:var(--green)">${getDetailedTime(data.updated_at)}</span>
+                    </div>
+                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
+                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
+                </div>`);
+            } else if (type === "telegram") {
+                if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
+                const tg = data.data.data;
+                const boxId = `json_tg_${Date.now()}`;
+                const accountAge = tg.first_msg_date ? new Date(tg.first_msg_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : "N/A";
+
+                print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
+                    <div class="data-grid">
+                        <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
+                        <span class="label">First Name:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
+                        <span class="label">Names History:</span><span class="val">${tg.names_count || 1} records</span>
+                        <span class="label">Usernames:</span><span class="val">${tg.usernames_count || 0} recorded</span>
+                        <span class="label">Msgs Trace:</span><span class="val v-blue">${tg.total_msg_count?.toLocaleString() || 0}</span>
+                        <span class="label">Groups:</span><span class="val">${tg.total_groups || 0} (Adm: ${tg.adm_in_groups || 0})</span>
+                        <span class="label">Activity:</span><span class="val">${tg.msg_in_groups_count || 0} in groups</span>
+                        <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
+                        <span class="label">First Seen:</span><span class="val v-dim">${accountAge}</span>
+                        <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
+                    </div>
+                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
+                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
+                </div>`);
+            }
+        } catch (e) { print(`<span style='color:var(--red)'><br>[!] CRITICAL_ERROR: ${e.message}</span>`); }
     }
     targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
