@@ -113,7 +113,7 @@
     const screen = document.getElementById("screen");
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
-    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
+    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint"; //
 
     function updateUI() {
         targetInput.value = ""; 
@@ -138,14 +138,6 @@
     function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
     function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
 
-    const getDetailedTime = (dateStr) => {
-        if(!dateStr) return "N/A";
-        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
-        if (isNaN(date.getTime())) return "N/A";
-        const daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
-        return yrs > 0 ? `${yrs}y ${daysT % 365}d ago` : `${daysT}d ago`;
-    };
-
     async function startSearch() {
         const type = moduleSelect.value, value = targetInput.value.trim();
         if (type === "phone" && value.length !== 10) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number.</span>`); return; }
@@ -155,15 +147,14 @@
         print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
+            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
             let data = await res.json();
+            const boxId = `json_${Date.now()}`;
 
-            if (type === "phone") {
-                if (!data || data.status !== "success") throw new Error("Target_Not_Found");
-                const boxId = `json_ph_${Date.now()}`;
+            if (type === "phone" && data.name) {
                 print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
                     <div class="data-grid">
-                        <span class="label">Name:</span><span class="val" style="color:var(--green)">${data.name || "N/A"}</span>
+                        <span class="label">Name:</span><span class="val" style="color:var(--green)">${data.name}</span>
                         <span class="label">Number:</span><span class="val" style="color:var(--accent)">${data.phone || value}</span>
                         <span class="label">Carrier:</span><span class="val">${data.carrier || "N/A"}</span>
                         <span class="label">Circle:</span><span class="val">${data.circle || "N/A"}</span>
@@ -171,49 +162,39 @@
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else if (type === "github") {
-                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
-                
-                // GitHub Email extraction from Events/Commits
-                let foundEmail = "Hidden/Private";
+            } else if (type === "github" && data.login) {
+                // Email extraction logic included
+                let email = "Hidden/Private";
                 try {
-                    const eventRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
-                    const events = await eventRes.json();
-                    for(let e of events) {
-                        if(e.payload && e.payload.commits) {
-                            foundEmail = e.payload.commits[0].author.email;
-                            if(foundEmail && !foundEmail.includes("noreply")) break;
-                        }
-                    }
-                } catch(err) { console.log("Email fetch failed"); }
+                    const eRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
+                    const events = await eRes.json();
+                    for(let e of events) { if(e.payload && e.payload.commits) { email = e.payload.commits[0].author.email; if(email && !email.includes("noreply")) break; } }
+                } catch(e) {}
 
-                const boxId = `json_git_${Date.now()}`;
                 print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
                     <div class="data-grid">
                         <span class="label">Login:</span><span class="val" style="color:var(--green)">${data.login}</span>
-                        <span class="label">UID:</span><span class="val" style="color:var(--accent)">${data.id}</span>
-                        <span class="label">Email:</span><span class="val" style="color:var(--green)">${foundEmail}</span>
+                        <span class="label">Email:</span><span class="val" style="color:var(--accent)">${email}</span>
                         <span class="label">Location:</span><span class="val">${data.location || "N/A"}</span>
-                        <span class="label">Created:</span><span class="val">${getDetailedTime(data.created_at)}</span>
-                        <span class="label">Last Push:</span><span class="val" style="color:var(--green)">${getDetailedTime(data.updated_at)}</span>
+                        <span class="label">Public Repos:</span><span class="val">${data.public_repos}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else if (type === "telegram") {
-                if (!data) throw new Error("Telegram_Uplink_Failed");
-                const boxId = `json_tg_${Date.now()}`;
+            } else if (type === "telegram" && data.id) {
                 print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
                     <div class="data-grid">
-                        <span class="label">UID:</span><span class="val" style="color:var(--accent)">${data.id || "N/A"}</span>
+                        <span class="label">UID:</span><span class="val" style="color:var(--accent)">${data.id}</span>
                         <span class="label">First Name:</span><span class="val" style="color:var(--green)">${data.first_name || "N/A"}</span>
                         <span class="label">Username:</span><span class="val">@${data.username || "N/A"}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
+            } else {
+                print(`<div class="intel-card"><pre style="font-size:10px; color:var(--green);">${JSON.stringify(data, null, 2)}</pre></div>`);
             }
-        } catch (e) { print(`<span style='color:var(--red)'><br>[!] CRITICAL_ERROR: ${e.message}</span>`); }
+        } catch (e) { print(`<span style='color:var(--red)'><br>[!] ERR: Uplink Failed.</span>`); }
     }
     targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
