@@ -108,13 +108,22 @@
     const screen = document.getElementById("screen");
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
-    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
+    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint"; //
 
     function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
+    
+    // YAHAN FIX HAI: Phone par keyboard reset karne ke liye hard attribute change
     function updateUI() {
         targetInput.value = ""; const type = moduleSelect.value;
-        if (type === "phone") { targetInput.placeholder = "Enter 10-digit number..."; targetInput.maxLength = 10; targetInput.inputmode = "numeric"; }
-        else { targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); targetInput.maxLength = 40; targetInput.inputmode = "text"; }
+        if (type === "phone") { 
+            targetInput.placeholder = "Enter 10-digit number..."; 
+            targetInput.maxLength = 10; 
+            targetInput.setAttribute("inputmode", "numeric"); 
+        } else { 
+            targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); 
+            targetInput.maxLength = 40; 
+            targetInput.setAttribute("inputmode", "text"); // Normal keyboard for GitHub
+        }
     }
 
     function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
@@ -139,9 +148,10 @@
         print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
+            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
             let data = await res.json();
 
+            // TERA MASTER LOGIC: PHONE
             if (type === "phone") {
                 if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
                 data.results.forEach((p, i) => {
@@ -162,7 +172,9 @@
                         <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
                     </div>`);
                 });
-            } else if (type === "github") {
+            } 
+            // TERA MASTER LOGIC: GITHUB
+            else if (type === "github") {
                 if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
                 const boxId = `json_git_${Date.now()}`;
                 const isReal = (e) => e && !e.includes("noreply");
@@ -178,7 +190,9 @@
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else if (type === "telegram") {
+            } 
+            // TERA MASTER LOGIC: TELEGRAM
+            else if (type === "telegram") {
                 if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
                 const tg = data.data.data;
                 const boxId = `json_tg_${Date.now()}`;
