@@ -19,13 +19,13 @@ color:#e6e6e6;
 min-height:100vh;
 display:flex;
 justify-content:center;
-align-items:center;
-padding:16px;
+align-items:flex-start;
+padding:20px 12px;
 }
 
 .terminal{
 width:100%;
-max-width:760px;
+max-width:900px;
 background:#000;
 border-radius:14px;
 border:1px solid #2a2a2a;
@@ -56,6 +56,7 @@ flex:1;
 overflow-y:auto;
 padding:16px;
 font-size:14px;
+white-space:pre-wrap;
 }
 
 .input-bar{
@@ -86,9 +87,9 @@ text-transform:lowercase;
 .success{color:#00ff88;}
 .error{color:#ff4d4d;}
 .info{color:#4da6ff;}
+hr{border-color:#222;margin:10px 0;}
 
 @media(max-width:640px){
-.wrapper{align-items:flex-start;padding-top:24px;}
 .console{font-size:13px;}
 input{font-size:13px;}
 }
@@ -111,18 +112,19 @@ input{font-size:13px;}
 </div>
 
 <div id="console" class="console">
-Type <span class="info">help</span> to begin.
+Type help to begin.
 </div>
 
 <div class="input-bar">
 <div class="prompt">m4y4nky@system:~$</div>
-<input id="cmd" autocomplete="off" spellcheck="false">
+<input id="cmd" autocomplete="off">
 </div>
 
 </div>
 </div>
 
 <script>
+
 const consoleEl=document.getElementById("console");
 const input=document.getElementById("cmd");
 
@@ -134,15 +136,32 @@ consoleEl.appendChild(line);
 consoleEl.scrollTop=consoleEl.scrollHeight;
 }
 
-/* FORCE LOWERCASE */
+function relativeTime(dateStr){
+if(!dateStr) return "N/A";
+const now=new Date();
+const past=new Date(dateStr);
+const diff=(now-past)/1000;
+
+const years=Math.floor(diff/31536000);
+if(years>0) return years+" year"+(years>1?"s":"")+" ago";
+
+const months=Math.floor(diff/2592000);
+if(months>0) return months+" month"+(months>1?"s":"")+" ago";
+
+const days=Math.floor(diff/86400);
+if(days>0) return days+" day"+(days>1?"s":"")+" ago";
+
+return "recently";
+}
+
 input.addEventListener("input",()=>{
 input.value=input.value.toLowerCase();
 });
 
 input.addEventListener("keydown",async(e)=>{
-if(e.key==="Enter"){
+if(e.key!=="Enter") return;
 
-let cmd=input.value.trim().toLowerCase();
+let cmd=input.value.trim();
 if(!cmd) return;
 
 print("m4y4nky@system:~$ "+cmd,"info");
@@ -159,7 +178,6 @@ print("phone <10digit_number>");
 print("telegram <numeric_id>");
 print("github <username>");
 print("clear");
-print("help");
 return;
 }
 
@@ -172,7 +190,7 @@ return;
 let type=parts[0];
 let value=parts[1];
 
-/* VALIDATIONS */
+/* validations */
 if(type==="phone" && !/^[0-9]{10}$/.test(value)){
 print("Phone must be 10 digits","error");
 return;
@@ -184,7 +202,7 @@ return;
 }
 
 if(type==="github" && !/^[a-z0-9-]+$/.test(value)){
-print("Invalid github username format","error");
+print("Invalid github username","error");
 return;
 }
 
@@ -192,66 +210,132 @@ print("Scanning...","info");
 
 try{
 
-const url=`https://osint-backend-black.vercel.app/api/osint?type=${type}&value=${value}`;
-const res=await fetch(url);
+/* ================= PHONE ================= */
+if(type==="phone"){
 
-if(!res.ok){
-print("Server error "+res.status,"error");
-return;
-}
-
+const res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=phone&value=${value}`);
 const data=await res.json();
 
-/* ================= PHONE ================= */
-
-if(type==="phone"){
 if(!data.status || !data.results || data.results.length===0){
 print("No phone data found","error");
 return;
 }
 
-let p=data.results[0];
-
 print("PHONE INTELLIGENCE","success");
+print("Profiles Found: "+data.results.length);
+print("");
+
+data.results.forEach((p,i)=>{
+
+let addressLine="N/A", city="N/A", state="N/A", pincode="N/A";
+
+if(p.address){
+let parts=p.address
+.replace(/!!/g,"!")
+.split("!")
+.map(s=>s.trim())
+.filter(s=>s && s.toLowerCase()!=="na");
+
+parts=[...new Set(parts)];
+
+let pin=parts.find(x=>/^[0-9]{6}$/.test(x));
+if(pin){
+pincode=pin;
+parts=parts.filter(x=>x!==pin);
+}
+
+if(parts.length>=2){
+state=parts.pop();
+city=parts.pop();
+}
+
+addressLine=parts.join(", ");
+}
+
+print("------- PROFILE "+(i+1)+" -------");
 print("Mobile: "+(p.mobile||"N/A"));
 print("Name: "+(p.name||"N/A"));
-print("Father: "+(p.fname||"N/A"));
+print("Father Name: "+(p.fname||"N/A"));
 print("Circle: "+(p.circle||"N/A"));
-print("Gov ID: "+(p.id||"N/A"));
-if(p.email) print("Email: "+p.email);
+print("Government ID: "+(p.id||"N/A"));
+print("Alternative Number: "+(p.alt||"N/A"));
+print("Email: "+(p.email||"N/A"));
+print("Address: "+addressLine);
+print("City: "+city);
+print("State: "+state);
+print("Pincode: "+pincode);
+print("");
+});
+
 return;
 }
 
 /* ================= TELEGRAM ================= */
-
 if(type==="telegram"){
+
+const res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=telegram&value=${value}`);
+const data=await res.json();
 let tg=data?.data?.data||data?.data||data;
+
 if(!tg || !tg.id){
 print("Telegram user not found","error");
 return;
 }
 
 print("TELEGRAM INTELLIGENCE","success");
-print("Name: "+(tg.first_name||"")+" "+(tg.last_name||""));
+print("First Name: "+(tg.first_name||"N/A"));
+print("Last Name: "+(tg.last_name||"N/A"));
 print("User ID: "+tg.id);
-print("Groups: "+(tg.total_groups||0));
-print("Messages: "+(tg.total_msg_count||0));
+print("Active: "+tg.is_active);
+print("Bot: "+tg.is_bot);
+print("Total Groups: "+tg.total_groups);
+print("Admin In Groups: "+tg.adm_in_groups);
+print("Group Messages: "+tg.msg_in_groups_count);
+print("Total Messages: "+tg.total_msg_count);
+print("Names Count: "+tg.names_count);
+print("Usernames Count: "+tg.usernames_count);
+
+if(tg.first_msg_date)
+print("First Message: "+new Date(tg.first_msg_date).toLocaleString()+" ("+relativeTime(tg.first_msg_date)+")");
+
+if(tg.last_msg_date)
+print("Last Message: "+new Date(tg.last_msg_date).toLocaleString()+" ("+relativeTime(tg.last_msg_date)+")");
+
 return;
 }
 
 /* ================= GITHUB ================= */
-
 if(type==="github"){
-if(data.message==="Not Found"){
-print("Github user not found","error");
+
+const profile=await fetch(`https://api.github.com/users/${value}`).then(r=>r.json());
+if(profile.message==="Not Found"){
+print("GitHub user not found","error");
 return;
 }
 
 print("GITHUB PROFILE","success");
-print("Username: "+data.login);
-print("Followers: "+data.followers);
-print("Repos: "+data.public_repos);
-print("Profile: "+data.html_url);
+print("Username: "+profile.login);
+print("Name: "+(profile.name||"N/A"));
+print("Followers: "+profile.followers);
+print("Public Repos: "+profile.public_repos);
+print("Created: "+new Date(profile.created_at).toDateString()+" ("+relativeTime(profile.created_at)+")");
+print("Last Updated: "+new Date(profile.updated_at).toDateString()+" ("+relativeTime(profile.updated_at)+")");
+
+/* commit email fetch */
+let commitEmail="N/A";
+
+try{
+let repos=await fetch(`https://api.github.com/users/${value}/repos?sort=created&per_page=1`).then(r=>r.json());
+if(repos.length>0){
+let commits=await fetch(`https://api.github.com/repos/${value}/${repos[0].name}/commits?per_page=1`).then(r=>r.json());
+if(commits[0]?.commit?.author?.email)
+commitEmail=commits[0].commit.author.email;
+}
+}catch{}
+
+print("Email: "+commitEmail);
+print("Profile: "+profile.html_url);
+
 return;
 }
 
@@ -259,7 +343,6 @@ return;
 print("Network error","error");
 }
 
-}
 });
 </script>
 
