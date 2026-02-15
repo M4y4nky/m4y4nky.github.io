@@ -113,7 +113,7 @@
     const screen = document.getElementById("screen");
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
-    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint"; //
+    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
 
     function updateUI() {
         targetInput.value = ""; 
@@ -138,6 +138,17 @@
     function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
     function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
 
+    const getDetailedTime = (dateStr) => {
+        if(!dateStr) return "N/A";
+        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
+        if (isNaN(date.getTime())) return "N/A";
+        const minsT = Math.floor(diff / (1000 * 60)), hrsT = Math.floor(diff / (1000 * 60 * 60)), daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
+        const days = daysT % 365, hrs = hrsT % 24, mins = minsT % 60;
+        let p = [];
+        if (yrs > 0) p.push(`${yrs}y`); if (days > 0) p.push(`${days}d`); if (hrs > 0) p.push(`${hrs}h`); if (mins > 0) p.push(`${mins}m`);
+        return p.length > 0 ? p.join(" ") + " ago" : "Just now";
+    };
+
     async function startSearch() {
         const type = moduleSelect.value, value = targetInput.value.trim();
         if (type === "phone" && value.length !== 10) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number.</span>`); return; }
@@ -151,7 +162,9 @@
             let data = await res.json();
             const boxId = `json_${Date.now()}`;
 
-            if (type === "phone" && data.name) {
+            if (type === "phone") {
+                // Formatting Devil Hosting response
+                if (!data.name) throw new Error("Target_Not_Found");
                 print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
                     <div class="data-grid">
                         <span class="label">Name:</span><span class="val" style="color:var(--green)">${data.name}</span>
@@ -162,8 +175,9 @@
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else if (type === "github" && data.login) {
-                // Email extraction logic included
+            } else if (type === "github") {
+                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
+                
                 let email = "Hidden/Private";
                 try {
                     const eRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
@@ -181,7 +195,8 @@
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else if (type === "telegram" && data.id) {
+            } else if (type === "telegram") {
+                if (!data.id) throw new Error("Telegram_Uplink_Failed");
                 print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
                     <div class="data-grid">
                         <span class="label">UID:</span><span class="val" style="color:var(--accent)">${data.id}</span>
