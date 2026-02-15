@@ -18,10 +18,10 @@
         }
         .window {
             width: 100%; max-width: 500px; height: 100%;
-            background: var(--glass); backdrop-filter: blur(30px);
+            background: var(--glass); backdrop-filter: blur(20px);
             border: 1px solid var(--border); border-radius: 12px;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 0 50px rgba(137, 180, 250, 0.05);
+            box-shadow: 0 0 50px rgba(137, 180, 250, 0.1);
         }
         .title-bar {
             height: 38px; background: rgba(17, 17, 27, 0.9);
@@ -35,11 +35,11 @@
 
         .screen { flex: 1; padding: 20px; overflow-y: auto; scrollbar-width: none; color: var(--text); font-size: 13px; }
         .screen::-webkit-scrollbar { display: none; }
-
+        
         .startup-header { margin-bottom: 25px; border-left: 2px solid var(--accent); padding-left: 15px; }
         .brand { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-bottom: 5px; }
         .version-tag { font-size: 10px; background: var(--accent); color: #111; padding: 1px 6px; border-radius: 3px; font-weight: 900; vertical-align: middle; }
-
+        
         .sys-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
         .sys-item { font-size: 10px; color: var(--dim); }
         .sys-item span { color: var(--green); font-weight: bold; }
@@ -51,7 +51,8 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .card-tag { color: var(--accent); font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
         .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .data-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; }
+        
+        .data-grid { display: grid; grid-template-columns: 100px 1fr; gap: 6px 10px; }
         .label { color: var(--dim); font-size: 11px; }
         .val { color: var(--text); word-break: break-all; line-height: 1.4; }
 
@@ -61,38 +62,37 @@
         input { flex: 1; background: none; border: none; color: #fff; font-family: inherit; font-size: 15px; padding: 12px; width: 0; }
         .search-btn { background: var(--accent); color: #111; border: none; padding: 0 18px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; }
 
-        .toggle-btn { margin-top: 12px; background: none; border: 1px solid var(--dim); color: var(--dim); font-size: 9px; padding: 4px 8px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: inherit; }
-        .json-raw-box { font-size: 10px; color: var(--dim); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed var(--border); white-space: pre-wrap; display: none; }
+        pre { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; font-size: 10px; color: var(--green); border: 1px solid var(--border); white-space: pre-wrap; overflow-x: auto; }
     </style>
 </head>
 <body>
 <div class="window">
     <div class="title-bar">
         <div class="dots"><div class="dot d-red"></div><div class="dot d-yel"></div><div class="dot d-grn"></div></div>
-        <div class="window-title">TERMINAL SESSION</div>
+        <div class="window-title">TERMINAL@M4Y4NKY</div>
     </div>
     <div class="screen" id="screen">
         <div class="startup-header">
             <div class="brand">M4Y4NKY'S <span class="version-tag">OSINT V1.0</span></div>
-            <div style="font-size: 11px; color: var(--dim);">Automated Intelligence Gathering System</div>
+            <div style="font-size: 11px; color: var(--dim);">Multi-API Intelligence Gathering System</div>
             <div class="sys-info">
-                <div class="sys-item">CONNECTION: <span>SECURE</span></div>
+                <div class="sys-item">UPLINK: <span>SECURE</span></div>
                 <div class="sys-item">DATABASE: <span>ONLINE</span></div>
-                <div class="sys-item">PROXY: <span>ENCRYPTED</span></div>
+                <div class="sys-item">GITHUB: <span>OFFICIAL</span></div>
                 <div class="sys-item">SESSION: <span id="uptime">0s</span></div>
             </div>
         </div>
-        <div style="color:var(--accent); font-size: 11px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 10px;">[ SYSTEM LOGS ]</div>
-        <div style="color:var(--dim); font-size: 11px;">Waiting for target uplink...</div>
+        <div style="color:var(--dim); font-size: 11px;">[SYSTEM READY] Waiting for target uplink...</div>
     </div>
     <div class="search-area">
         <div class="input-wrapper">
-            <select id="module" onchange="updateUI()">
+            <select id="module">
                 <option value="phone">PHONE</option>
                 <option value="github">GITHUB</option>
                 <option value="telegram">TELEGRAM</option>
+                <option value="pincode">PINCODE</option>
             </select>
-            <input id="target" type="text" placeholder="Enter 10-digit number..." maxlength="10" inputmode="numeric" oninput="validateInput(this)">
+            <input id="target" type="text" placeholder="Enter Target ID..." autocomplete="off">
             <button class="search-btn" onclick="startSearch()">SCAN</button>
         </div>
     </div>
@@ -108,101 +108,59 @@
     const screen = document.getElementById("screen");
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
+
+    // TERA ASLI VERCEL BACKEND LINK
     const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
 
-    function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
-    function updateUI() {
-        targetInput.value = ""; const type = moduleSelect.value;
-        if (type === "phone") { targetInput.placeholder = "Enter 10-digit number..."; targetInput.maxLength = 10; targetInput.inputmode = "numeric"; }
-        else { targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); targetInput.maxLength = 40; targetInput.inputmode = "text"; }
+    function print(html) {
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        screen.appendChild(div);
+        screen.scrollTop = screen.scrollHeight;
     }
-
-    function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
-    function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
-
-    const getDetailedTime = (dateStr) => {
-        if(!dateStr) return "N/A";
-        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
-        if (isNaN(date.getTime())) return "N/A";
-        const minsT = Math.floor(diff / (1000 * 60)), hrsT = Math.floor(diff / (1000 * 60 * 60)), daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
-        const days = daysT % 365, hrs = hrsT % 24, mins = minsT % 60;
-        let p = [];
-        if (yrs > 0) p.push(`${yrs}y`); if (days > 0) p.push(`${days}d`); if (hrs > 0) p.push(`${hrs}h`); if (mins > 0) p.push(`${mins}m`);
-        return p.length > 0 ? p.join(" ") + " ago" : "Just now";
-    };
 
     async function startSearch() {
-        const type = moduleSelect.value, value = targetInput.value.trim();
-        if (type === "phone" && (value.length !== 10 || isNaN(value))) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number length.</span>`); return; }
-        if (!value) { print(`<span style='color:var(--red)'><br>[!] ERR_NULL: Input required.</span>`); return; }
-        targetInput.value = "";
-        print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
+        const type = moduleSelect.value;
+        const value = targetInput.value.trim();
+        if (!value) return;
+
+        print(`<div style="color:var(--accent); margin-top:15px">[EXEC] uplink --search ${type} --id ${value}</div>`);
 
         try {
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
-            let data = await res.json();
+            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
+            const data = await res.json();
 
-            if (type === "phone") {
-                if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
-                data.results.forEach((p, i) => {
-                    const boxId = `json_ph_${Date.now()}_${i}`;
-                    let cleanAddr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, " ").replace(/\s+/g, " ");
-                    print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
-                        <div class="data-grid">
-                            <span class="label">Target:</span><span class="val v-blue">${p.mobile || "N/A"}</span>
-                            <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
-                            <span class="label">Father Name:</span><span class="val">${p.fname || "N/A"}</span>
-                            <span class="label">Alt Number:</span><span class="val v-blue">${p.alt || "N/A"}</span>
-                            <span class="label">Identity ID:</span><span class="val v-blue">${p.id || "N/A"}</span>
-                            <span class="label">Email:</span><span class="val">${p.email || "N/A"}</span>
-                            <span class="label">Circle:</span><span class="val">${p.circle || "N/A"}</span>
-                            <span class="label">Address:</span><span class="val">${cleanAddr}</span>
-                        </div>
-                        <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                        <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
-                    </div>`);
-                });
-            } else if (type === "github") {
-                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
-                const boxId = `json_git_${Date.now()}`;
-                const isReal = (e) => e && !e.includes("noreply");
-                let displayMail = isReal(data.email) ? data.email : (isReal(data.recovered_email) ? data.recovered_email : "Private/Hidden");
-                print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
+            if (type === 'github' && data.login) {
+                print(`<div class="intel-card">
+                    <span class="card-tag">GitHub Dossier</span>
                     <div class="data-grid">
-                        <span class="label">Login:</span><span class="val" style="color:var(--green)">${data.login}</span>
-                        <span class="label">UID:</span><span class="val v-blue">${data.id || "N/A"}</span>
-                        <span class="label">Intelligence:</span><span class="val v-blue">${displayMail}</span>
-                        <span class="label">Created:</span><span class="val">${getDetailedTime(data.created_at)}</span>
-                        <span class="label">Last Push:</span><span class="val" style="color:var(--green)">${getDetailedTime(data.updated_at)}</span>
+                        <span class="label">Username:</span><span class="val" style="color:var(--green)">${data.login}</span>
+                        <span class="label">Full Name:</span><span class="val">${data.name || 'N/A'}</span>
+                        <span class="label">Location:</span><span class="val">${data.location || 'N/A'}</span>
+                        <span class="label">Followers:</span><span class="val">${data.followers}</span>
+                        <span class="label">Public Repos:</span><span class="val">${data.public_repos}</span>
                     </div>
-                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else if (type === "telegram") {
-                if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
-                const tg = data.data.data;
-                const boxId = `json_tg_${Date.now()}`;
-                const accountAge = tg.first_msg_date ? new Date(tg.first_msg_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : "N/A";
-
-                print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
+            } else if (type === 'phone' && data.status === 'success') {
+                print(`<div class="intel-card">
+                    <span class="card-tag">Cellular Identity</span>
                     <div class="data-grid">
-                        <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
-                        <span class="label">First Name:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
-                        <span class="label">Names History:</span><span class="val">${tg.names_count || 1} records</span>
-                        <span class="label">Usernames:</span><span class="val">${tg.usernames_count || 0} recorded</span>
-                        <span class="label">Msgs Trace:</span><span class="val v-blue">${tg.total_msg_count?.toLocaleString() || 0}</span>
-                        <span class="label">Groups:</span><span class="val">${tg.total_groups || 0} (Adm: ${tg.adm_in_groups || 0})</span>
-                        <span class="label">Activity:</span><span class="val">${tg.msg_in_groups_count || 0} in groups</span>
-                        <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
-                        <span class="label">First Seen:</span><span class="val v-dim">${accountAge}</span>
-                        <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
+                        <span class="label">Owner:</span><span class="val" style="color:var(--green)">${data.name || 'N/A'}</span>
+                        <span class="label">Carrier:</span><span class="val">${data.carrier || 'N/A'}</span>
+                        <span class="label">Circle:</span><span class="val">${data.circle || 'N/A'}</span>
                     </div>
-                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
+                </div>`);
+            } else {
+                print(`<div class="intel-card">
+                    <span class="card-tag">Raw Intelligence</span>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
                 </div>`);
             }
-        } catch (e) { print(`<span style='color:var(--red)'><br>[!] CRITICAL_ERROR: ${e.message}</span>`); }
+        } catch (e) {
+            print(`<div style="color:var(--red); margin-top:10px">[!] ERROR: Uplink interrupted.</div>`);
+        }
     }
+
     targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
 </body>
