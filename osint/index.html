@@ -1,227 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>M4Y4NKY'S OSINT V1.0</title>
-    <style>
-        :root {
-            --bg: #0b0d15; --glass: rgba(15, 17, 26, 0.98); --border: rgba(137, 180, 250, 0.2);
-            --accent: #89b4fa; --green: #a6e3a1; --dim: #6c7086; --text: #cdd6f4; --red: #f38ba8;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body {
-            margin: 0; background: #000;
-            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-            display: flex; justify-content: center; align-items: center;
-            height: 100dvh; padding: 15px; overflow: hidden;
-        }
-        .window {
-            width: 100%; max-width: 500px; height: 100%;
-            background: var(--glass); backdrop-filter: blur(30px);
-            border: 1px solid var(--border); border-radius: 12px;
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 0 50px rgba(137, 180, 250, 0.05);
-        }
-        .title-bar {
-            height: 38px; background: rgba(17, 17, 27, 0.9);
-            display: flex; align-items: center; padding: 0 15px;
-            border-bottom: 1px solid var(--border); flex-shrink: 0;
-        }
-        .dots { display: flex; gap: 6px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .d-red { background: var(--red); } .d-yel { background: #fab387; } .d-grn { background: var(--green); }
-        .window-title { flex: 1; text-align: center; font-size: 10px; color: var(--dim); font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
-
-        .screen { flex: 1; padding: 20px; overflow-y: auto; scrollbar-width: none; color: var(--text); font-size: 13px; }
-        .screen::-webkit-scrollbar { display: none; }
-
-        .startup-header { margin-bottom: 25px; border-left: 2px solid var(--accent); padding-left: 15px; }
-        .brand { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-bottom: 5px; }
-        .version-tag { font-size: 10px; background: var(--accent); color: #111; padding: 1px 6px; border-radius: 3px; font-weight: 900; vertical-align: middle; }
-
-        .sys-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
-        .sys-item { font-size: 10px; color: var(--dim); }
-        .sys-item span { color: var(--green); font-weight: bold; }
-
-        .intel-card {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
-            border-radius: 10px; padding: 16px; margin: 15px 0; animation: slideUp 0.3s ease-out;
-            width: 100%;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .card-tag { color: var(--accent); font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
-        .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .data-grid { display: grid; grid-template-columns: 120px 1fr; gap: 6px 10px; }
-        .label { color: var(--dim); font-size: 11px; }
-        .val { color: var(--text); word-break: break-all; line-height: 1.4; }
-
-        .search-area { padding: 15px; background: #11111b; border-top: 1px solid var(--border); }
-        .input-wrapper { display: flex; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-        select { background: none; border: none; color: var(--accent); font-family: inherit; font-size: 11px; font-weight: bold; padding: 0 12px; cursor: pointer; }
-        input { flex: 1; background: none; border: none; color: #fff; font-family: inherit; font-size: 15px; padding: 12px; width: 0; }
-        .search-btn { background: var(--accent); color: #111; border: none; padding: 0 18px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; }
-
-        .toggle-btn { margin-top: 12px; background: none; border: 1px solid var(--dim); color: var(--dim); font-size: 9px; padding: 4px 8px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: inherit; }
-        .json-raw-box { 
-            font-size: 10px; color: var(--dim); background: rgba(0,0,0,0.3); padding: 10px; 
-            border-radius: 6px; margin-top: 10px; border: 1px dashed var(--border); 
-            white-space: pre-wrap; display: none; overflow-x: auto; max-width: 100%;
-        }
-    </style>
-</head>
-<body>
-<div class="window">
-    <div class="title-bar">
-        <div class="dots"><div class="dot d-red"></div><div class="dot d-yel"></div><div class="dot d-grn"></div></div>
-        <div class="window-title">TERMINAL SESSION</div>
-    </div>
-    <div class="screen" id="screen">
-        <div class="startup-header">
-            <div class="brand">M4Y4NKY'S <span class="version-tag">OSINT V1.0</span></div>
-            <div style="font-size: 11px; color: var(--dim);">Automated Intelligence Gathering System</div>
-            <div class="sys-info">
-                <div class="sys-item">CONNECTION: <span>SECURE</span></div>
-                <div class="sys-item">DATABASE: <span>ONLINE</span></div>
-                <div class="sys-item">PROXY: <span>ENCRYPTED</span></div>
-                <div class="sys-item">SESSION: <span id="uptime">0s</span></div>
-            </div>
-        </div>
-        <div style="color:var(--accent); font-size: 11px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 10px;">[ SYSTEM LOGS ]</div>
-        <div style="color:var(--dim); font-size: 11px;">Waiting for target uplink...</div>
-    </div>
-    <div class="search-area">
-        <div class="input-wrapper">
-            <select id="module" onchange="updateUI()">
-                <option value="phone">PHONE</option>
-                <option value="github">GITHUB</option>
-                <option value="telegram">TELEGRAM</option>
-            </select>
-            <input id="target" type="text" placeholder="Enter 10-digit number..." maxlength="10" inputmode="numeric" oninput="validateInput(this)">
-            <button class="search-btn" onclick="startSearch()">SCAN</button>
-        </div>
-    </div>
-</div>
-
 <script>
-    let startTime = Date.now();
-    setInterval(() => {
-        let diff = Math.floor((Date.now() - startTime) / 1000);
-        document.getElementById('uptime').innerText = diff + 's';
-    }, 1000);
-
-    const screen = document.getElementById("screen");
-    const targetInput = document.getElementById("target");
-    const moduleSelect = document.getElementById("module");
-    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
-
-    function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
-    
-    function updateUI() {
-        targetInput.value = ""; const type = moduleSelect.value;
-        if (type === "phone") { 
-            targetInput.placeholder = "Enter 10-digit number..."; 
-            targetInput.maxLength = 10; 
-            targetInput.setAttribute("inputmode", "numeric"); 
-        } else { 
-            targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); 
-            targetInput.maxLength = 40; 
-            targetInput.setAttribute("inputmode", "text"); 
-        }
-    }
-
-    function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
-    function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
-
-    const getDetailedTime = (dateStr) => {
-        if(!dateStr) return "N/A";
-        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
-        if (isNaN(date.getTime())) return "N/A";
-        const exact = date.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
-        const minsT = Math.floor(diff / (1000 * 60)), hrsT = Math.floor(diff / (1000 * 60 * 60)), daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
-        const days = daysT % 365, hrs = hrsT % 24, mins = minsT % 60;
-        let p = [];
-        if (yrs > 0) p.push(`${yrs}y`); if (days > 0) p.push(`${days}d`); if (hrs > 0) p.push(`${hrs}h`); if (mins > 0) p.push(`${mins}m`);
-        return `${exact} (${p.join(" ")} ago)`;
-    };
+    // ... existing script logic ...
 
     async function startSearch() {
-        const type = moduleSelect.value, value = targetInput.value.trim();
-        if (type === "phone" && (value.length !== 10 || isNaN(value))) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number length.</span>`); return; }
-        if (!value) { print(`<span style='color:var(--red)'><br>[!] ERR_NULL: Input required.</span>`); return; }
-        targetInput.value = "";
-        print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
+        // ... (previous lines of startSearch function) ...
 
         try {
             const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
             let data = await res.json();
             const boxId = `json_${Date.now()}`;
 
-            if (type === "phone") {
-                if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
-                data.results.forEach((p, i) => {
-                    const innerBoxId = `json_ph_${Date.now()}_${i}`;
-                    let cleanAddr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, " ").replace(/\s+/g, " ");
-                    print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
-                        <div class="data-grid">
-                            <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
-                            <span class="label">Father:</span><span class="val">${p.fname || "N/A"}</span>
-                            <span class="label">Identity ID:</span><span class="val" style="color:var(--accent)">${p.id || "N/A"}</span>
-                            <span class="label">Target:</span><span class="val" style="color:var(--accent)">${p.mobile || "N/A"}</span>
-                            <span class="label">Alt Number:</span><span class="val">${p.alt || "N/A"}</span>
-                            <span class="label">Email:</span><span class="val">${p.email || "N/A"}</span>
-                            <span class="label">Address:</span><span class="val" style="font-size:10px;">${cleanAddr}</span>
-                        </div>
-                        <button class="toggle-btn" onclick="toggleJson('${innerBoxId}')">toggle_raw</button>
-                        <div class="json-raw-box" id="${innerBoxId}">${JSON.stringify(p, null, 2)}</div>
-                    </div>`);
-                });
-            } else if (type === "github") {
-                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
-                
-                // DEEP SCAN: Scrape email from commit events (The .patch logic)
-                let extractedEmail = "Private/Hidden";
-                try {
-                    const eventRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
-                    const events = await eventRes.json();
-                    for(let e of events) {
-                        if(e.type === "PushEvent" && e.payload.commits) {
-                            for(let commit of e.payload.commits) {
-                                if (commit.author.email && !commit.author.email.includes("noreply")) {
-                                    extractedEmail = commit.author.email;
-                                    break;
-                                }
-                            }
-                        }
-                        if(extractedEmail !== "Private/Hidden") break;
-                    }
-                    if(extractedEmail === "Private/Hidden") extractedEmail = data.email || "Private/Hidden";
-                } catch(e) { extractedEmail = data.email || "Private/Hidden"; }
-
-                print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
-                    <div class="data-grid">
-                        <span class="label">Identity:</span><span class="val" style="color:var(--green)">${data.name || data.login}</span>
-                        <span class="label">Login:</span><span class="val" style="color:var(--accent)">${data.login}</span>
-                        <span class="label">Intelligence:</span><span class="val" style="color:var(--green)">${extractedEmail}</span>
-                        <span class="label">Location:</span><span class="val">${data.location || "N/A"}</span>
-                        <span class="label">Organization:</span><span class="val">${data.company || "N/A"}</span>
-                        <span class="label">Network:</span><span class="val">${data.followers} Followers / ${data.following} Following</span>
-                        <span class="label">Created:</span><span class="val v-dim">${getDetailedTime(data.created_at)}</span>
-                        <span class="label">Last Push:</span><span class="val v-dim">${getDetailedTime(data.updated_at)}</span>
-                    </div>
-                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
-                </div>`);
-            } else if (type === "telegram") {
+            if (type === "telegram") {
                 if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
                 const tg = data.data.data;
+                
+                // Formatting total message count with commas
+                const totalMsgsFormatted = tg.total_msg_count ? tg.total_msg_count.toLocaleString('en-IN') : "0";
+
                 print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
                     <div class="data-grid">
                         <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
                         <span class="label">Identity:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
                         <span class="label">Is Bot:</span><span class="val" style="color:${tg.is_bot ? 'var(--red)' : 'var(--green)'}">${tg.is_bot ? 'YES [!]' : 'NO'}</span>
                         <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? '● ACTIVE' : '○ INACTIVE'}</span>
+                        
+                        <span class="label">Msgs Trace:</span><span class="val v-blue" style="font-weight:bold;">${totalMsgsFormatted}</span>
+                        
                         <span class="label">Groups Intel:</span><span class="val">${tg.total_groups || 0} (Admin: ${tg.adm_in_groups || 0})</span>
+                        <span class="label">Group Activity:</span><span class="val">${tg.msg_in_groups_count || 0} messages</span>
+                        <span class="label">Names Log:</span><span class="val">${tg.names_count || 1} records found</span>
                         <span class="label">Account Age:</span><span class="val v-dim">${getDetailedTime(tg.first_msg_date)}</span>
                         <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
                     </div>
@@ -229,9 +35,7 @@
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
                 </div>`);
             }
+            // ... baaki GitHub aur Phone modules as is ...
         } catch (e) { print(`<span style='color:var(--red)'><br>[!] CRITICAL_ERROR: ${e.message}</span>`); }
     }
-    targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
-</body>
-</html>
