@@ -112,7 +112,6 @@
 
     function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
     
-    // YAHAN FIX HAI: Phone par keyboard reset karne ke liye hard attribute change
     function updateUI() {
         targetInput.value = ""; const type = moduleSelect.value;
         if (type === "phone") { 
@@ -122,7 +121,7 @@
         } else { 
             targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); 
             targetInput.maxLength = 40; 
-            targetInput.setAttribute("inputmode", "text"); // Normal keyboard for GitHub
+            targetInput.setAttribute("inputmode", "text"); 
         }
     }
 
@@ -151,7 +150,6 @@
             const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
             let data = await res.json();
 
-            // TERA MASTER LOGIC: PHONE
             if (type === "phone") {
                 if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
                 data.results.forEach((p, i) => {
@@ -172,27 +170,38 @@
                         <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
                     </div>`);
                 });
-            } 
-            // TERA MASTER LOGIC: GITHUB
-            else if (type === "github") {
+            } else if (type === "github") {
                 if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
+                
+                // GITHUB EMAIL EXTRACTION TRICK
+                let displayMail = "Private/Hidden";
+                try {
+                    const eventRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
+                    const events = await eventRes.json();
+                    for(let e of events) {
+                        if(e.payload && e.payload.commits) {
+                            displayMail = e.payload.commits[0].author.email;
+                            if(displayMail && !displayMail.includes("noreply")) break;
+                        }
+                    }
+                    if(!displayMail || displayMail.includes("noreply")) {
+                        displayMail = data.email || "Private/Hidden";
+                    }
+                } catch(err) { displayMail = data.email || "Private/Hidden"; }
+
                 const boxId = `json_git_${Date.now()}`;
-                const isReal = (e) => e && !e.includes("noreply");
-                let displayMail = isReal(data.email) ? data.email : (isReal(data.recovered_email) ? data.recovered_email : "Private/Hidden");
                 print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
                     <div class="data-grid">
                         <span class="label">Login:</span><span class="val" style="color:var(--green)">${data.login}</span>
                         <span class="label">UID:</span><span class="val v-blue">${data.id || "N/A"}</span>
-                        <span class="label">Intelligence:</span><span class="val v-blue">${displayMail}</span>
+                        <span class="label">Intelligence:</span><span class="val v-blue" style="color:var(--green)">${displayMail}</span>
                         <span class="label">Created:</span><span class="val">${getDetailedTime(data.created_at)}</span>
                         <span class="label">Last Push:</span><span class="val" style="color:var(--green)">${getDetailedTime(data.updated_at)}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } 
-            // TERA MASTER LOGIC: TELEGRAM
-            else if (type === "telegram") {
+            } else if (type === "telegram") {
                 if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
                 const tg = data.data.data;
                 const boxId = `json_tg_${Date.now()}`;
