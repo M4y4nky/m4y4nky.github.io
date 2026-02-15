@@ -9,127 +9,201 @@
             --bg: #0b0d15; --glass: rgba(15, 17, 26, 0.98); --border: rgba(137, 180, 250, 0.2);
             --accent: #89b4fa; --green: #a6e3a1; --dim: #6c7086; --text: #cdd6f4; --red: #f38ba8;
         }
-        * { box-sizing: border-box; outline: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body {
             margin: 0; background: #000;
-            font-family: 'SF Mono', monospace;
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
             display: flex; justify-content: center; align-items: center;
             height: 100dvh; padding: 15px; overflow: hidden;
         }
         .window {
             width: 100%; max-width: 500px; height: 100%;
-            background: var(--glass); backdrop-filter: blur(20px);
+            background: var(--glass); backdrop-filter: blur(30px);
             border: 1px solid var(--border); border-radius: 12px;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 0 40px rgba(137, 180, 250, 0.1);
+            box-shadow: 0 0 50px rgba(137, 180, 250, 0.05);
         }
         .title-bar {
-            height: 35px; background: rgba(17, 17, 27, 0.9);
+            height: 38px; background: rgba(17, 17, 27, 0.9);
             display: flex; align-items: center; padding: 0 15px;
             border-bottom: 1px solid var(--border); flex-shrink: 0;
         }
         .dots { display: flex; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
         .d-red { background: var(--red); } .d-yel { background: #fab387; } .d-grn { background: var(--green); }
-        .window-title { flex: 1; text-align: center; font-size: 10px; color: var(--dim); font-weight: bold; letter-spacing: 2px; }
+        .window-title { flex: 1; text-align: center; font-size: 10px; color: var(--dim); font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
 
         .screen { flex: 1; padding: 20px; overflow-y: auto; scrollbar-width: none; color: var(--text); font-size: 13px; }
         .screen::-webkit-scrollbar { display: none; }
-        
-        .brand { font-size: 20px; font-weight: 900; color: var(--accent); margin-bottom: 5px; }
-        .sys-info { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 15px 0; font-size: 10px; color: var(--dim); }
-        .sys-info span { color: var(--green); }
+
+        .startup-header { margin-bottom: 25px; border-left: 2px solid var(--accent); padding-left: 15px; }
+        .brand { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: -1px; margin-bottom: 5px; }
+        .version-tag { font-size: 10px; background: var(--accent); color: #111; padding: 1px 6px; border-radius: 3px; font-weight: 900; vertical-align: middle; }
+
+        .sys-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .sys-item { font-size: 10px; color: var(--dim); }
+        .sys-item span { color: var(--green); font-weight: bold; }
 
         .intel-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
-            border-radius: 8px; padding: 15px; margin: 15px 0; animation: fadeIn 0.3s;
+            border-radius: 10px; padding: 16px; margin: 15px 0; animation: slideUp 0.3s ease-out;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .data-grid { display: grid; grid-template-columns: 90px 1fr; gap: 5px; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .card-tag { color: var(--accent); font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
+        .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+        .data-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; }
         .label { color: var(--dim); font-size: 11px; }
-        .val { color: var(--text); word-break: break-all; }
+        .val { color: var(--text); word-break: break-all; line-height: 1.4; }
 
         .search-area { padding: 15px; background: #11111b; border-top: 1px solid var(--border); }
-        .input-group { display: flex; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-        select { background: none; border: none; color: var(--accent); padding: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        input { flex: 1; background: none; border: none; color: #fff; padding: 12px; font-size: 14px; font-family: inherit; }
-        button { background: var(--accent); color: #111; border: none; padding: 0 20px; font-weight: bold; cursor: pointer; }
+        .input-wrapper { display: flex; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+        select { background: none; border: none; color: var(--accent); font-family: inherit; font-size: 11px; font-weight: bold; padding: 0 12px; cursor: pointer; }
+        input { flex: 1; background: none; border: none; color: #fff; font-family: inherit; font-size: 15px; padding: 12px; width: 0; }
+        .search-btn { background: var(--accent); color: #111; border: none; padding: 0 18px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; }
 
-        pre { background: #000; padding: 10px; border-radius: 5px; font-size: 11px; color: var(--green); border: 1px solid var(--border); overflow-x: auto; }
+        .toggle-btn { margin-top: 12px; background: none; border: 1px solid var(--dim); color: var(--dim); font-size: 9px; padding: 4px 8px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: inherit; }
+        .json-raw-box { font-size: 10px; color: var(--dim); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed var(--border); white-space: pre-wrap; display: none; }
     </style>
 </head>
 <body>
 <div class="window">
     <div class="title-bar">
         <div class="dots"><div class="dot d-red"></div><div class="dot d-yel"></div><div class="dot d-grn"></div></div>
-        <div class="window-title">TERMINAL@M4Y4NKY</div>
+        <div class="window-title">TERMINAL SESSION</div>
     </div>
     <div class="screen" id="screen">
-        <div class="brand">M4Y4NKY'S <span style="background:var(--accent);color:#111;padding:0 5px;border-radius:3px;font-size:12px">OSINT V1.0</span></div>
-        <div class="sys-info">
-            <div>STATUS: <span>ONLINE</span></div>
-            <div>UPLINK: <span>ENCRYPTED</span></div>
-            <div>API: <span>VERCEL_v2</span></div>
-            <div>SESSION: <span id="timer">0s</span></div>
+        <div class="startup-header">
+            <div class="brand">M4Y4NKY'S <span class="version-tag">OSINT V1.0</span></div>
+            <div style="font-size: 11px; color: var(--dim);">Automated Intelligence Gathering System</div>
+            <div class="sys-info">
+                <div class="sys-item">CONNECTION: <span>SECURE</span></div>
+                <div class="sys-item">DATABASE: <span>ONLINE</span></div>
+                <div class="sys-item">PROXY: <span>ENCRYPTED</span></div>
+                <div class="sys-item">SESSION: <span id="uptime">0s</span></div>
+            </div>
         </div>
-        <div style="color:var(--dim); font-size:11px; margin-bottom:10px;">[System] Waiting for target identification...</div>
+        <div style="color:var(--accent); font-size: 11px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 10px;">[ SYSTEM LOGS ]</div>
+        <div style="color:var(--dim); font-size: 11px;">Waiting for target uplink...</div>
     </div>
     <div class="search-area">
-        <div class="input-group">
-            <select id="module">
+        <div class="input-wrapper">
+            <select id="module" onchange="updateUI()">
                 <option value="phone">PHONE</option>
                 <option value="github">GITHUB</option>
                 <option value="telegram">TELEGRAM</option>
-                <option value="pincode">PINCODE</option>
             </select>
-            <input id="target" type="text" placeholder="Target ID..." autocomplete="off">
-            <button onclick="startSearch()">SCAN</button>
+            <input id="target" type="text" placeholder="Enter 10-digit number..." maxlength="10" inputmode="numeric" oninput="validateInput(this)">
+            <button class="search-btn" onclick="startSearch()">SCAN</button>
         </div>
     </div>
 </div>
 
 <script>
-    let sec = 0; setInterval(() => { document.getElementById('timer').innerText = ++sec + 's'; }, 1000);
-    const screen = document.getElementById("screen");
-    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint"; //
+    let startTime = Date.now();
+    setInterval(() => {
+        let diff = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('uptime').innerText = diff + 's';
+    }, 1000);
 
-    function print(html) {
-        const div = document.createElement("div");
-        div.innerHTML = html;
-        screen.appendChild(div);
-        screen.scrollTop = screen.scrollHeight;
+    const screen = document.getElementById("screen");
+    const targetInput = document.getElementById("target");
+    const moduleSelect = document.getElementById("module");
+    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
+
+    function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
+    function updateUI() {
+        targetInput.value = ""; const type = moduleSelect.value;
+        if (type === "phone") { targetInput.placeholder = "Enter 10-digit number..."; targetInput.maxLength = 10; targetInput.inputmode = "numeric"; }
+        else { targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); targetInput.maxLength = 40; targetInput.inputmode = "text"; }
     }
+
+    function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
+    function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
+
+    const getDetailedTime = (dateStr) => {
+        if(!dateStr) return "N/A";
+        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
+        if (isNaN(date.getTime())) return "N/A";
+        const minsT = Math.floor(diff / (1000 * 60)), hrsT = Math.floor(diff / (1000 * 60 * 60)), daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
+        const days = daysT % 365, hrs = hrsT % 24, mins = minsT % 60;
+        let p = [];
+        if (yrs > 0) p.push(`${yrs}y`); if (days > 0) p.push(`${days}d`); if (hrs > 0) p.push(`${hrs}h`); if (mins > 0) p.push(`${mins}m`);
+        return p.length > 0 ? p.join(" ") + " ago" : "Just now";
+    };
 
     async function startSearch() {
-        const type = document.getElementById("module").value;
-        const value = document.getElementById("target").value.trim();
-        if(!value) return;
-
-        print(`<div style="color:var(--accent);margin-top:15px">[EXEC] scanning --${type} ${value}...</div>`);
+        const type = moduleSelect.value, value = targetInput.value.trim();
+        if (type === "phone" && (value.length !== 10 || isNaN(value))) { print(`<span style='color:var(--red)'><br>[!] ERR_VAL: Invalid number length.</span>`); return; }
+        if (!value) { print(`<span style='color:var(--red)'><br>[!] ERR_NULL: Input required.</span>`); return; }
+        targetInput.value = "";
+        print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
-            const data = await res.json();
+            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
+            let data = await res.json();
 
-            if(type === 'phone' && data.status === 'success') {
-                print(`<div class="intel-card">
-                    <div style="color:var(--accent);font-size:10px;margin-bottom:8px">IDENTITY_FOUND</div>
+            if (type === "phone") {
+                if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
+                data.results.forEach((p, i) => {
+                    const boxId = `json_ph_${Date.now()}_${i}`;
+                    let cleanAddr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, " ").replace(/\s+/g, " ");
+                    print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
+                        <div class="data-grid">
+                            <span class="label">Target:</span><span class="val v-blue">${p.mobile || "N/A"}</span>
+                            <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
+                            <span class="label">Father Name:</span><span class="val">${p.fname || "N/A"}</span>
+                            <span class="label">Alt Number:</span><span class="val v-blue">${p.alt || "N/A"}</span>
+                            <span class="label">Identity ID:</span><span class="val v-blue">${p.id || "N/A"}</span>
+                            <span class="label">Email:</span><span class="val">${p.email || "N/A"}</span>
+                            <span class="label">Circle:</span><span class="val">${p.circle || "N/A"}</span>
+                            <span class="label">Address:</span><span class="val">${cleanAddr}</span>
+                        </div>
+                        <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
+                        <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
+                    </div>`);
+                });
+            } else if (type === "github") {
+                if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
+                const boxId = `json_git_${Date.now()}`;
+                const isReal = (e) => e && !e.includes("noreply");
+                let displayMail = isReal(data.email) ? data.email : (isReal(data.recovered_email) ? data.recovered_email : "Private/Hidden");
+                print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
                     <div class="data-grid">
-                        <span class="label">Name:</span><span class="val" style="color:var(--green)">${data.name || 'N/A'}</span>
-                        <span class="label">Carrier:</span><span class="val">${data.carrier || 'N/A'}</span>
-                        <span class="label">Circle:</span><span class="val">${data.circle || 'N/A'}</span>
+                        <span class="label">Login:</span><span class="val" style="color:var(--green)">${data.login}</span>
+                        <span class="label">UID:</span><span class="val v-blue">${data.id || "N/A"}</span>
+                        <span class="label">Intelligence:</span><span class="val v-blue">${displayMail}</span>
+                        <span class="label">Created:</span><span class="val">${getDetailedTime(data.created_at)}</span>
+                        <span class="label">Last Push:</span><span class="val" style="color:var(--green)">${getDetailedTime(data.updated_at)}</span>
                     </div>
+                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
+                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
-            } else {
-                print(`<div class="intel-card"><pre>${JSON.stringify(data, null, 2)}</pre></div>`);
-            }
-        } catch (e) {
-            print(`<div style="color:var(--red);margin-top:10px">[!] ERR: Connection to backend severed.</div>`);
-        }
-    }
+            } else if (type === "telegram") {
+                if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
+                const tg = data.data.data;
+                const boxId = `json_tg_${Date.now()}`;
+                const accountAge = tg.first_msg_date ? new Date(tg.first_msg_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : "N/A";
 
-    document.getElementById("target").addEventListener("keypress", (e) => { if(e.key === "Enter") startSearch(); });
+                print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
+                    <div class="data-grid">
+                        <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
+                        <span class="label">First Name:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
+                        <span class="label">Names History:</span><span class="val">${tg.names_count || 1} records</span>
+                        <span class="label">Usernames:</span><span class="val">${tg.usernames_count || 0} recorded</span>
+                        <span class="label">Msgs Trace:</span><span class="val v-blue">${tg.total_msg_count?.toLocaleString() || 0}</span>
+                        <span class="label">Groups:</span><span class="val">${tg.total_groups || 0} (Adm: ${tg.adm_in_groups || 0})</span>
+                        <span class="label">Activity:</span><span class="val">${tg.msg_in_groups_count || 0} in groups</span>
+                        <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
+                        <span class="label">First Seen:</span><span class="val v-dim">${accountAge}</span>
+                        <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
+                    </div>
+                    <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
+                    <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
+                </div>`);
+            }
+        } catch (e) { print(`<span style='color:var(--red)'><br>[!] CRITICAL_ERROR: ${e.message}</span>`); }
+    }
+    targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
 </body>
 </html>
