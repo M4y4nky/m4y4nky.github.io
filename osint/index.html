@@ -180,32 +180,39 @@
             } else if (type === "github") {
                 if (!data || !data.login) throw new Error("GitHub_Uplink_Failed");
                 
-                // FIXED: Extreme Email Extraction Logic
                 let extractedEmail = "Private/Hidden";
                 try {
-                    const eventRes = await fetch(`https://api.github.com/users/${data.login}/events/public`);
-                    const events = await eventRes.json();
-                    for(let e of events) {
-                        if(e.payload && e.payload.commits) {
-                            extractedEmail = e.payload.commits[0].author.email;
-                            if(extractedEmail && !extractedEmail.includes("noreply")) break;
+                    // Step 1: Get Repositories
+                    const reposRes = await fetch(`https://api.github.com/users/${data.login}/repos?sort=updated&per_page=1`);
+                    const repos = await reposRes.json();
+                    
+                    if(repos.length > 0) {
+                        const repoName = repos[0].name;
+                        // Step 2: Get Commits (using .patch style scraping via API)
+                        const commitRes = await fetch(`https://api.github.com/repos/${data.login}/${repoName}/commits?per_page=5`);
+                        const commits = await commitRes.json();
+                        
+                        for(let c of commits) {
+                            if(c.commit && c.commit.author && c.commit.author.email) {
+                                let email = c.commit.author.email;
+                                if(!email.includes("noreply") && email.includes("@")) {
+                                    extractedEmail = email;
+                                    break;
+                                }
+                            }
                         }
                     }
-                    if(!extractedEmail || extractedEmail.includes("noreply")) extractedEmail = data.email || "Private/Hidden";
-                } catch(e) { extractedEmail = data.email || "Private/Hidden"; }
+                } catch(e) { console.error("Email Scraping Error:", e); }
 
                 print(`<div class="intel-card"><span class="card-tag">GitHub Dossier</span>
                     <div class="data-grid">
                         <span class="label">Identity:</span><span class="val" style="color:var(--green)">${data.name || "N/A"}</span>
                         <span class="label">Login:</span><span class="val" style="color:var(--accent)">${data.login}</span>
                         <span class="label">GitHub ID:</span><span class="val">${data.id}</span>
-                        <span class="label">Intelligence:</span><span class="val" style="color:var(--green)">${extractedEmail}</span>
+                        <span class="label">Intelligence:</span><span class="val" style="color:var(--green); font-weight:bold;">${extractedEmail}</span>
                         <span class="label">Network:</span><span class="val">${data.followers} Followers / ${data.following} Following</span>
-                        <span class="label">Assets:</span><span class="val">${data.public_repos} Repos / ${data.public_gists} Gists</span>
-                        <span class="label">Organization:</span><span class="val">${data.company || "N/A"}</span>
-                        <span class="label">Location:</span><span class="val">${data.location || "N/A"}</span>
+                        <span class="label">Assets:</span><span class="val">${data.public_repos} Repos</span>
                         <span class="label">Created:</span><span class="val v-dim">${getDetailedTime(data.created_at)}</span>
-                        <span class="label">Last Push:</span><span class="val v-dim">${getDetailedTime(data.updated_at)}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
@@ -217,12 +224,9 @@
                     <div class="data-grid">
                         <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
                         <span class="label">Identity:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
-                        <span class="label">Is Bot:</span><span class="val" style="color:${tg.is_bot ? 'var(--red)' : 'var(--green)'}">${tg.is_bot ? 'YES [!]' : 'NO'}</span>
                         <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? '● ACTIVE' : '○ INACTIVE'}</span>
                         <span class="label">Msgs Trace:</span><span class="val v-blue" style="font-weight:bold;">${tg.total_msg_count?.toLocaleString() || 0}</span>
-                        <span class="label">Groups Intel:</span><span class="val">${tg.total_groups || 0} (Admin: ${tg.adm_in_groups || 0})</span>
                         <span class="label">Account Age:</span><span class="val v-dim">${getDetailedTime(tg.first_msg_date)}</span>
-                        <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
