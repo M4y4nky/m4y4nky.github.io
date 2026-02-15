@@ -1,281 +1,312 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M4y4nky OSINT</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>M4Y4NKY OSINT PRO</title>
+    <style>
+        :root {
+            --bg: #0f111a;
+            --glass: rgba(25, 27, 38, 0.95);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #89b4fa;
+            --green: #a6e3a1;
+            --yellow: #f9e2af;
+            --red: #f38ba8;
+            --dim: #7f849c;
+            --text: #cdd6f4;
+        }
 
-<style>
-body{
-    margin:0;
-    background:#0f0f0f;
-    font-family:monospace;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    padding:25px 10px;
-}
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-.terminal{
-    width:95%;
-    max-width:900px;
-    background:#111;
-    border-radius:12px;
-    box-shadow:0 0 25px #000;
-    overflow:hidden;
-}
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top, #1e1e2e, #0f111a);
+            font-family: 'SF Mono', 'Cascadia Code', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100dvh;
+            padding: calc(env(safe-area-inset-top) + 15px) 15px calc(env(safe-area-inset-bottom) + 15px) 15px;
+            overflow: hidden;
+        }
 
-.header{
-    background:#1e1e1e;
-    padding:10px;
-    display:flex;
-    align-items:center;
-}
+        .window {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-.dot{
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    margin-right:6px;
-}
-.red{background:#ff5f56;}
-.yellow{background:#ffbd2e;}
-.green{background:#27c93f;}
+        .title-bar {
+            height: 42px;
+            background: rgba(17, 17, 27, 0.8);
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
 
-.title{
-    color:#aaa;
-    margin-left:15px;
-}
+        .dots { display: flex; gap: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .d-red { background: #ff5f56; }
+        .d-yel { background: #ffbd2e; }
+        .d-grn { background: #27c93f; }
 
-.screen{
-    height:420px;
-    overflow-y:auto;
-    padding:15px;
-    color:#ddd;
-    white-space:pre-wrap;
-}
+        .window-title {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 11px; color: var(--dim); font-weight: bold; letter-spacing: 0.8px;
+        }
 
-.input-line{
-    display:flex;
-    padding:12px 15px;
-    border-top:1px solid #222;
-}
+        .screen {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            color: var(--text);
+            font-size: 13px;
+        }
+        .screen::-webkit-scrollbar { display: none; }
 
-.prompt{
-    color:#00ff88;
-    margin-right:6px;
-}
+        .intel-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin: 20px 0;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-input{
-    flex:1;
-    background:none;
-    border:none;
-    outline:none;
-    color:#3aa0ff;
-    font-family:monospace;
-}
-</style>
+        .card-tag {
+            color: var(--green); font-size: 10px; font-weight: bold; text-transform: uppercase;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 12px;
+        }
+        .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+        .data-grid { display: grid; grid-template-columns: 100px 1fr; gap: 8px 15px; }
+        .label { color: var(--dim); font-weight: bold; font-size: 12px; }
+        .val { color: var(--text); word-break: break-all; line-height: 1.5; }
+        .v-blue { color: var(--accent); font-weight: bold; }
+        .v-green { color: var(--green); font-weight: bold; }
+
+        .loc-sec { margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border); }
+        .loc-tag { color: var(--accent); font-size: 10px; font-weight: bold; margin-bottom: 8px; display: block; }
+
+        .search-area {
+            padding: 20px;
+            background: rgba(17, 17, 27, 0.95);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        select {
+            background: none; border: none; color: var(--green);
+            font-family: inherit; font-size: 11px; font-weight: bold;
+            outline: none; padding: 0 10px; border-right: 1px solid var(--border);
+        }
+
+        input {
+            flex: 1; background: none; border: none; outline: none;
+            color: var(--accent); font-family: inherit; font-size: 16px;
+            padding: 10px; width: 0;
+        }
+
+        .search-btn {
+            background: var(--accent); color: #111; border: none;
+            padding: 0 15px; font-weight: bold; font-size: 11px; cursor: pointer;
+        }
+
+        .clear-link {
+            display: block; width: 100%; text-align: center;
+            color: var(--dim); font-size: 10px; margin-top: 10px; text-decoration: underline; cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-<div class="terminal">
-    <div class="header">
-        <div class="dot red"></div>
-        <div class="dot yellow"></div>
-        <div class="dot green"></div>
-        <div class="title">M4y4nky's OSINT terminal</div>
+<div class="window">
+    <div class="title-bar">
+        <div class="dots"><div class="dot d-red"></div><div class="dot d-yel"></div><div class="dot d-grn"></div></div>
+        <div class="window-title">m4y4nky — zsh — OSINT</div>
     </div>
 
     <div class="screen" id="screen">
-Type help to begin.
+        <span class="v-green">--- M4Y4NKY OSINT V7.0 PRO ---</span><br>
+        <span style="color:var(--dim)">HTTPS Environment Detected. System ready.</span>
     </div>
 
-    <div class="input-line">
-        <div class="prompt">m4y4nky@system:~$</div>
-        <input id="cmd" autocomplete="off" autofocus>
+    <div class="search-area">
+        <div class="input-wrapper">
+            <select id="module">
+                <option value="phone">PHONE</option>
+                <option value="github">GITHUB</option>
+                <option value="telegram">TELEGRAM</option>
+            </select>
+            <input id="target" type="text" placeholder="Query..." spellcheck="false" autocomplete="off">
+            <button class="search-btn" onclick="startSearch()">SCAN</button>
+        </div>
+        <div class="clear-link" onclick="clearScreen()">Clear Terminal</div>
     </div>
 </div>
 
 <script>
-const screen = document.getElementById("screen");
-const input = document.getElementById("cmd");
+    const screen = document.getElementById("screen");
+    const targetInput = document.getElementById("target");
+    const moduleSelect = document.getElementById("module");
 
-function print(txt=""){
-    screen.innerHTML += txt + "\n";
-    screen.scrollTop = screen.scrollHeight;
-}
-
-function space(lines=1){
-    for(let i=0;i<lines;i++){
-        screen.innerHTML += "\n";
+    function print(txt) {
+        const div = document.createElement("div");
+        div.innerHTML = txt;
+        screen.appendChild(div);
+        screen.scrollTop = screen.scrollHeight;
     }
-}
 
-input.addEventListener("keydown", async function(e){
-    if(e.key==="Enter"){
-        let cmd=input.value.trim().toLowerCase();
-        input.value="";
-        print("m4y4nky@system:~$ "+cmd);
-        await run(cmd);
+    function clearScreen() { screen.innerHTML = '<span class="v-green">Terminal Cleared.</span><br>'; }
+
+    async function startSearch() {
+        const cmd = moduleSelect.value;
+        const arg = targetInput.value.trim();
+        if (!arg) return print("<span style='color:var(--red)'><br>[!] Error: Target required.</span>");
+        
+        targetInput.value = "";
+        print(`<br><span style="color:var(--green)">m4y4nky:~$</span> ${cmd} ${arg}`);
+        
+        try {
+            if (cmd === "github") await scanGithub(arg);
+            else if (cmd === "phone") await scanPhone(arg);
+            else if (cmd === "telegram") await scanTelegram(arg);
+        } catch (e) {
+            print(`<span style='color:var(--red)'><br>[!] Critical Error: ${e.message}</span>`);
+        }
     }
-});
 
-async function run(cmd){
+    targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 
-if(cmd==="help"){
-    print("phone <10digit>");
-    print("telegram <id>");
-    print("github <username>");
-    space();
-    return;
-}
+    /* ================= GITHUB (ABBAS + DIRECT FALLBACK) ================= */
+    async function scanGithub(user) {
+        print(`<span style="color:var(--dim)">[*] Initiating GitHub Dossier Scan...</span>`);
+        let profile = null;
+        let email = "Private";
 
-if(cmd.startsWith("phone ")){
-    await phoneLookup(cmd.split(" ")[1]);
-}
+        // Try Abbas API First
+        try {
+            const res = await fetch(`https://abbas-apis.vercel.app/api/github?username=${user}`);
+            const json = await res.json();
+            profile = json.data || json;
+            if (profile.email) email = profile.email;
+        } catch (e) {
+            print(`<span style="color:var(--yellow)">[*] Primary API blocked. Retrying with Direct Fallback...</span>`);
+        }
 
-else if(cmd.startsWith("telegram ")){
-    await telegramLookup(cmd.split(" ")[1]);
-}
+        // Direct GitHub Fallback
+        if (!profile || profile.message === "Not Found") {
+            try {
+                const fbRes = await fetch(`https://api.github.com/users/${user}`);
+                profile = await fbRes.json();
+                if (profile.message === "Not Found") return print("<span style='color:var(--red)'>[!] Error: Target missing from GitHub.</span>");
+            } catch (e) {
+                return print("<span style='color:var(--red)'>[!] Network Error: GitHub API unreachable.</span>");
+            }
+        }
 
-else if(cmd.startsWith("github ")){
-    await githubLookup(cmd.split(" ")[1]);
-}
+        // Deep Commit Scanner for Email
+        if (!email || email === "Private" || email === "null") {
+            try {
+                const repoData = await fetch(`https://api.github.com/users/${user}/repos?sort=created&per_page=1`).then(r => r.json());
+                if (repoData.length > 0) {
+                    const commitData = await fetch(`https://api.github.com/repos/${user}/${repoData[0].name}/commits?per_page=1`).then(r => r.json());
+                    if (commitData.length > 0) {
+                        const commitEmail = commitData[0].commit.author.email;
+                        if (commitEmail && !commitEmail.includes("noreply")) email = commitEmail;
+                    }
+                }
+            } catch (e) { /* silent fail for scraper */ }
+        }
 
-else{
-    print("unknown command");
-    space();
-}
-}
+        print(`<div class="intel-card">
+            <span class="card-tag">GitHub Dossier</span>
+            <div class="data-grid">
+                <span class="label">Target:</span><span class="val v-green">${profile.name || "N/A"}</span>
+                <span class="label">User:</span><span class="val">${profile.login || profile.username}</span>
+                <span class="label">Mail:</span><span class="val v-blue">${email}</span>
+                <span class="label">Repos:</span><span class="val">${profile.public_repos || 0}</span>
+                <span class="label">URL:</span><span class="val v-blue">${profile.html_url || profile.profile_url}</span>
+            </div>
+        </div>`);
+    }
 
-/* ================= PHONE ================= */
+    /* ================= PHONE SCAN ================= */
+    async function scanPhone(num) {
+        print(`<span style="color:var(--dim)">[*] Interrogating Database...</span>`);
+        try {
+            const res = await fetch(`https://osint-backend-black.vercel.app/api/osint?type=phone&value=${num}`);
+            const data = await res.json();
+            if (!data.status || !data.results.length) return print("<span style='color:var(--red)'>[!] No records found.</span>");
 
-async function phoneLookup(num){
+            for (let p of data.results) {
+                let addr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, ", ").replace(/\s+/g, " ");
+                let html = `<div class="intel-card"><span class="card-tag">Database Match</span>
+                    <div class="data-grid">
+                        <span class="label">Full Name:</span><span class="val v-green">${p.name || "N/A"}</span>
+                        <span class="label">Mobile:</span><span class="val v-blue">${p.mobile || "N/A"}</span>
+                        <span class="label">Email:</span><span class="val v-blue">${p.email || "N/A"}</span>
+                        <span class="label">Address:</span><span class="val">${addr}</span>
+                    </div>`;
 
-print("Scanning...\n");
+                const pin = addr.match(/\b\d{6}\b/);
+                if (pin) {
+                    const pinRes = await fetch(`https://api.postalpincode.in/pincode/${pin[0]}`).then(r => r.json());
+                    if (pinRes[0].Status === "Success") {
+                        const po = pinRes[0].PostOffice[0];
+                        html += `<div class="loc-sec"><span class="loc-tag">GEO-DATA (PIN: ${pin[0]})</span>
+                            <div class="data-grid">
+                                <span class="label">City:</span><span class="val v-blue">${po.Block}</span>
+                                <span class="label">District:</span><span class="val v-blue">${po.District}</span>
+                                <span class="label">State:</span><span class="val v-blue">${po.State}</span>
+                            </div></div>`;
+                    }
+                }
+                html += `</div>`;
+                print(html);
+            }
+        } catch (e) { print("<span style='color:var(--red)'>[!] Database Connectivity Failure.</span>"); }
+    }
 
-const res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=phone&value=${num}`);
-const data=await res.json();
-
-if(!data.status || !data.results){
-    print("No data found\n");
-    return;
-}
-
-print("PHONE INTELLIGENCE");
-print("Profiles Found: "+data.results.length);
-space();
-
-for(let i=0;i<data.results.length;i++){
-
-let p=data.results[i];
-
-print("------ PROFILE "+(i+1)+" ------");
-space();
-
-print("Mobile: "+(p.mobile||"N/A"));
-print("Name: "+(p.name||"N/A"));
-print("Father Name: "+(p.fname||"N/A"));
-print("Circle: "+(p.circle||"N/A"));
-print("Government ID: "+(p.id||"N/A"));
-print("Alternative Number: "+(p.alt||"N/A"));
-print("Email: "+(p.email||"N/A"));
-
-let clean=p.address?.replace(/!/g,", ").replace(/\s+/g," ");
-print("Address: "+(clean||"N/A"));
-
-let pin=clean?.match(/\b\d{6}\b/);
-if(pin){
-    await pincodeLookup(pin[0]);
-}
-
-space(2);
-}
-}
-
-/* ================= PINCODE ================= */
-
-async function pincodeLookup(pin){
-try{
-let r=await fetch("https://api.postalpincode.in/pincode/"+pin);
-let j=await r.json();
-if(j[0].Status==="Success"){
-let post=j[0].PostOffice[0];
-print("City: "+post.Region);
-print("District: "+post.District);
-print("State: "+post.State);
-print("Pincode: "+pin);
-}
-}catch{}
-}
-
-/* ================= TELEGRAM ================= */
-
-async function telegramLookup(id){
-
-print("Scanning...\n");
-
-let res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=telegram&value=${id}`);
-let d=await res.json();
-
-let tg=d?.data?.data||d?.data||d;
-
-if(!tg?.id){
-print("User not found\n");
-return;
-}
-
-print("TELEGRAM INTELLIGENCE");
-print("User ID: "+tg.id);
-print("First Name: "+(tg.first_name||"N/A"));
-print("Total Groups: "+tg.total_groups);
-print("Admin In Groups: "+tg.adm_in_groups);
-print("Total Messages: "+tg.total_msg_count);
-print("First Message: "+formatTime(tg.first_msg_date));
-print("Last Message: "+formatTime(tg.last_msg_date));
-space();
-}
-
-/* ================= GITHUB ================= */
-
-async function githubLookup(user){
-
-print("Scanning...\n");
-
-let res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=github&value=${user}`);
-let g=await res.json();
-
-if(g.message==="Not Found"){
-print("User not found\n");
-return;
-}
-
-print("GITHUB PROFILE");
-print("Username: "+g.login);
-print("Name: "+(g.name||"N/A"));
-print("Followers: "+g.followers);
-print("Public Repos: "+g.public_repos);
-print("Created: "+formatTime(g.created_at));
-print("Last Updated: "+formatTime(g.updated_at));
-print("Email: "+(g.commit_email||"N/A"));
-print("Profile: "+g.html_url);
-space();
-}
-
-/* ================= TIME ================= */
-
-function formatTime(date){
-if(!date) return "N/A";
-let d=new Date(date);
-let diff=(new Date()-d)/1000;
-
-if(diff>31536000) return d.toDateString()+" ("+Math.floor(diff/31536000)+" year ago)";
-if(diff>2592000) return d.toDateString()+" ("+Math.floor(diff/2592000)+" month ago)";
-if(diff>86400) return d.toDateString()+" ("+Math.floor(diff/86400)+" day ago)";
-if(diff>3600) return d.toDateString()+" ("+Math.floor(diff/3600)+" hour ago)";
-return d.toDateString()+" ("+Math.floor(diff/60)+" minute ago)";
-}
-
+    /* ================= TELEGRAM SCAN ================= */
+    async function scanTelegram(id) {
+        print(`<span style="color:var(--dim)">[*] Searching TG Archives...</span>`);
+        try {
+            const res = await fetch(`https://osint-backend-black.vercel.app/api/osint?type=telegram&value=${id}`);
+            const d = await res.json();
+            const tg = d?.data || d;
+            if(!tg?.id) return print("<span style='color:var(--red)'>[!] Telegram user missing.</span>");
+            print(`<div class="intel-card"><span class="card-tag">TG Intel</span>
+                <div class="data-grid">
+                    <span class="label">User ID:</span><span class="val v-blue">${tg.id}</span>
+                    <span class="label">Name:</span><span class="val v-green">${tg.first_name || "N/A"}</span>
+                    <span class="label">Activity:</span><span class="val">${tg.total_msg_count || 0} msgs</span>
+                </div></div>`);
+        } catch (e) { print("<span style='color:var(--red)'>[!] Telegram scan error.</span>"); }
+    }
 </script>
-
 </body>
 </html>
