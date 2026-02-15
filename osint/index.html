@@ -1,258 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M4y4nky’s OSINT</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>M4y4nky OSINT</title>
 
 <style>
-html,body{
-margin:0;
-height:100%;
-background:#0c0c0c;
-font-family:ui-monospace,Menlo,monospace;
-color:#e6e6e6;
-}
-
-.wrapper{
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:flex-start;
-padding:20px 12px;
+body{
+    margin:0;
+    background:#0f0f0f;
+    font-family:monospace;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:25px 10px;
 }
 
 .terminal{
-width:100%;
-max-width:900px;
-background:#000;
-border-radius:14px;
-border:1px solid #2a2a2a;
-box-shadow:0 30px 80px rgba(0,0,0,.6);
-display:flex;
-flex-direction:column;
-overflow:hidden;
+    width:95%;
+    max-width:900px;
+    background:#111;
+    border-radius:12px;
+    box-shadow:0 0 25px #000;
+    overflow:hidden;
 }
 
 .header{
-background:#1a1a1a;
-padding:10px 14px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-font-size:13px;
-border-bottom:1px solid #222;
+    background:#1e1e1e;
+    padding:10px;
+    display:flex;
+    align-items:center;
 }
 
-.dots{display:flex;gap:6px;}
-.dot{width:12px;height:12px;border-radius:50%;}
+.dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    margin-right:6px;
+}
 .red{background:#ff5f56;}
 .yellow{background:#ffbd2e;}
 .green{background:#27c93f;}
 
-.console{
-flex:1;
-overflow-y:auto;
-padding:16px;
-font-size:14px;
-white-space:pre-wrap;
+.title{
+    color:#aaa;
+    margin-left:15px;
 }
 
-.input-bar{
-display:flex;
-gap:8px;
-padding:12px 16px;
-border-top:1px solid #222;
+.screen{
+    height:420px;
+    overflow-y:auto;
+    padding:15px;
+    color:#ddd;
+    white-space:pre-wrap;
+}
+
+.input-line{
+    display:flex;
+    padding:12px 15px;
+    border-top:1px solid #222;
 }
 
 .prompt{
-color:#00ff88;
-font-weight:600;
-white-space:nowrap;
+    color:#00ff88;
+    margin-right:6px;
 }
 
 input{
-flex:1;
-background:transparent;
-border:none;
-outline:none;
-color:#fff;
-font-family:inherit;
-font-size:14px;
-min-width:0;
-text-transform:lowercase;
-}
-
-.success{color:#00ff88;}
-.error{color:#ff4d4d;}
-.info{color:#4da6ff;}
-hr{border-color:#222;margin:10px 0;}
-
-@media(max-width:640px){
-.console{font-size:13px;}
-input{font-size:13px;}
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color:#3aa0ff;
+    font-family:monospace;
 }
 </style>
 </head>
-
 <body>
 
-<div class="wrapper">
 <div class="terminal">
+    <div class="header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <div class="title">M4y4nky's OSINT terminal</div>
+    </div>
 
-<div class="header">
-<div class="dots">
-<div class="dot red"></div>
-<div class="dot yellow"></div>
-<div class="dot green"></div>
-</div>
-<div>M4y4nky’s OSINT</div>
-<div class="text-gray-500 text-xs">terminal</div>
-</div>
-
-<div id="console" class="console">
+    <div class="screen" id="screen">
 Type help to begin.
-</div>
+    </div>
 
-<div class="input-bar">
-<div class="prompt">m4y4nky@system:~$</div>
-<input id="cmd" autocomplete="off">
-</div>
-
-</div>
+    <div class="input-line">
+        <div class="prompt">m4y4nky@system:~$</div>
+        <input id="cmd" autocomplete="off" autofocus>
+    </div>
 </div>
 
 <script>
+const screen = document.getElementById("screen");
+const input = document.getElementById("cmd");
 
-const consoleEl=document.getElementById("console");
-const input=document.getElementById("cmd");
-
-function print(text,className=""){
-const line=document.createElement("div");
-if(className) line.className=className;
-line.textContent=text;
-consoleEl.appendChild(line);
-consoleEl.scrollTop=consoleEl.scrollHeight;
+function print(txt=""){
+    screen.innerHTML += txt + "\n";
+    screen.scrollTop = screen.scrollHeight;
 }
 
-function relativeTime(dateStr){
-if(!dateStr) return "N/A";
-const now=new Date();
-const past=new Date(dateStr);
-const diff=(now-past)/1000;
-
-const years=Math.floor(diff/31536000);
-if(years>0) return years+" year"+(years>1?"s":"")+" ago";
-
-const months=Math.floor(diff/2592000);
-if(months>0) return months+" month"+(months>1?"s":"")+" ago";
-
-const days=Math.floor(diff/86400);
-if(days>0) return days+" day"+(days>1?"s":"")+" ago";
-
-return "recently";
+function space(lines=1){
+    for(let i=0;i<lines;i++){
+        screen.innerHTML += "\n";
+    }
 }
 
-input.addEventListener("input",()=>{
-input.value=input.value.toLowerCase();
+input.addEventListener("keydown", async function(e){
+    if(e.key==="Enter"){
+        let cmd=input.value.trim().toLowerCase();
+        input.value="";
+        print("m4y4nky@system:~$ "+cmd);
+        await run(cmd);
+    }
 });
 
-input.addEventListener("keydown",async(e)=>{
-if(e.key!=="Enter") return;
-
-let cmd=input.value.trim();
-if(!cmd) return;
-
-print("m4y4nky@system:~$ "+cmd,"info");
-input.value="";
-
-if(cmd==="clear"){
-consoleEl.innerHTML="";
-return;
-}
+async function run(cmd){
 
 if(cmd==="help"){
-print("Available commands:","success");
-print("phone <10digit_number>");
-print("telegram <numeric_id>");
-print("github <username>");
-print("clear");
-return;
+    print("phone <10digit>");
+    print("telegram <id>");
+    print("github <username>");
+    space();
+    return;
 }
 
-let parts=cmd.split(" ");
-if(parts.length<2){
-print("Usage: type value","error");
-return;
+if(cmd.startsWith("phone ")){
+    await phoneLookup(cmd.split(" ")[1]);
 }
 
-let type=parts[0];
-let value=parts[1];
-
-/* validations */
-if(type==="phone" && !/^[0-9]{10}$/.test(value)){
-print("Phone must be 10 digits","error");
-return;
+else if(cmd.startsWith("telegram ")){
+    await telegramLookup(cmd.split(" ")[1]);
 }
 
-if(type==="telegram" && !/^[0-9]+$/.test(value)){
-print("Telegram ID must be numeric","error");
-return;
+else if(cmd.startsWith("github ")){
+    await githubLookup(cmd.split(" ")[1]);
 }
 
-if(type==="github" && !/^[a-z0-9-]+$/.test(value)){
-print("Invalid github username","error");
-return;
+else{
+    print("unknown command");
+    space();
 }
-
-print("Scanning...","info");
-
-try{
+}
 
 /* ================= PHONE ================= */
-if(type==="phone"){
 
-const res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=phone&value=${value}`);
+async function phoneLookup(num){
+
+print("Scanning...\n");
+
+const res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=phone&value=${num}`);
 const data=await res.json();
 
-if(!data.status || !data.results || data.results.length===0){
-print("No phone data found","error");
-return;
+if(!data.status || !data.results){
+    print("No data found\n");
+    return;
 }
 
-print("PHONE INTELLIGENCE","success");
+print("PHONE INTELLIGENCE");
 print("Profiles Found: "+data.results.length);
-print("");
+space();
 
-data.results.forEach((p,i)=>{
+for(let i=0;i<data.results.length;i++){
 
-let addressLine="N/A", city="N/A", state="N/A", pincode="N/A";
+let p=data.results[i];
 
-if(p.address){
-let parts=p.address
-.replace(/!!/g,"!")
-.split("!")
-.map(s=>s.trim())
-.filter(s=>s && s.toLowerCase()!=="na");
+print("------ PROFILE "+(i+1)+" ------");
+space();
 
-parts=[...new Set(parts)];
-
-let pin=parts.find(x=>/^[0-9]{6}$/.test(x));
-if(pin){
-pincode=pin;
-parts=parts.filter(x=>x!==pin);
-}
-
-if(parts.length>=2){
-state=parts.pop();
-city=parts.pop();
-}
-
-addressLine=parts.join(", ");
-}
-
-print("------- PROFILE "+(i+1)+" -------");
 print("Mobile: "+(p.mobile||"N/A"));
 print("Name: "+(p.name||"N/A"));
 print("Father Name: "+(p.fname||"N/A"));
@@ -260,90 +179,102 @@ print("Circle: "+(p.circle||"N/A"));
 print("Government ID: "+(p.id||"N/A"));
 print("Alternative Number: "+(p.alt||"N/A"));
 print("Email: "+(p.email||"N/A"));
-print("Address: "+addressLine);
-print("City: "+city);
-print("State: "+state);
-print("Pincode: "+pincode);
-print("");
-});
 
-return;
+let clean=p.address?.replace(/!/g,", ").replace(/\s+/g," ");
+print("Address: "+(clean||"N/A"));
+
+let pin=clean?.match(/\b\d{6}\b/);
+if(pin){
+    await pincodeLookup(pin[0]);
+}
+
+space(2);
+}
+}
+
+/* ================= PINCODE ================= */
+
+async function pincodeLookup(pin){
+try{
+let r=await fetch("https://api.postalpincode.in/pincode/"+pin);
+let j=await r.json();
+if(j[0].Status==="Success"){
+let post=j[0].PostOffice[0];
+print("City: "+post.Region);
+print("District: "+post.District);
+print("State: "+post.State);
+print("Pincode: "+pin);
+}
+}catch{}
 }
 
 /* ================= TELEGRAM ================= */
-if(type==="telegram"){
 
-const res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=telegram&value=${value}`);
-const data=await res.json();
-let tg=data?.data?.data||data?.data||data;
+async function telegramLookup(id){
 
-if(!tg || !tg.id){
-print("Telegram user not found","error");
+print("Scanning...\n");
+
+let res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=telegram&value=${id}`);
+let d=await res.json();
+
+let tg=d?.data?.data||d?.data||d;
+
+if(!tg?.id){
+print("User not found\n");
 return;
 }
 
-print("TELEGRAM INTELLIGENCE","success");
-print("First Name: "+(tg.first_name||"N/A"));
-print("Last Name: "+(tg.last_name||"N/A"));
+print("TELEGRAM INTELLIGENCE");
 print("User ID: "+tg.id);
-print("Active: "+tg.is_active);
-print("Bot: "+tg.is_bot);
+print("First Name: "+(tg.first_name||"N/A"));
 print("Total Groups: "+tg.total_groups);
 print("Admin In Groups: "+tg.adm_in_groups);
-print("Group Messages: "+tg.msg_in_groups_count);
 print("Total Messages: "+tg.total_msg_count);
-print("Names Count: "+tg.names_count);
-print("Usernames Count: "+tg.usernames_count);
-
-if(tg.first_msg_date)
-print("First Message: "+new Date(tg.first_msg_date).toLocaleString()+" ("+relativeTime(tg.first_msg_date)+")");
-
-if(tg.last_msg_date)
-print("Last Message: "+new Date(tg.last_msg_date).toLocaleString()+" ("+relativeTime(tg.last_msg_date)+")");
-
-return;
+print("First Message: "+formatTime(tg.first_msg_date));
+print("Last Message: "+formatTime(tg.last_msg_date));
+space();
 }
 
 /* ================= GITHUB ================= */
-if(type==="github"){
 
-const profile=await fetch(`https://api.github.com/users/${value}`).then(r=>r.json());
-if(profile.message==="Not Found"){
-print("GitHub user not found","error");
+async function githubLookup(user){
+
+print("Scanning...\n");
+
+let res=await fetch(`https://osint-backend-black.vercel.app/api/osint?type=github&value=${user}`);
+let g=await res.json();
+
+if(g.message==="Not Found"){
+print("User not found\n");
 return;
 }
 
-print("GITHUB PROFILE","success");
-print("Username: "+profile.login);
-print("Name: "+(profile.name||"N/A"));
-print("Followers: "+profile.followers);
-print("Public Repos: "+profile.public_repos);
-print("Created: "+new Date(profile.created_at).toDateString()+" ("+relativeTime(profile.created_at)+")");
-print("Last Updated: "+new Date(profile.updated_at).toDateString()+" ("+relativeTime(profile.updated_at)+")");
-
-/* commit email fetch */
-let commitEmail="N/A";
-
-try{
-let repos=await fetch(`https://api.github.com/users/${value}/repos?sort=created&per_page=1`).then(r=>r.json());
-if(repos.length>0){
-let commits=await fetch(`https://api.github.com/repos/${value}/${repos[0].name}/commits?per_page=1`).then(r=>r.json());
-if(commits[0]?.commit?.author?.email)
-commitEmail=commits[0].commit.author.email;
-}
-}catch{}
-
-print("Email: "+commitEmail);
-print("Profile: "+profile.html_url);
-
-return;
+print("GITHUB PROFILE");
+print("Username: "+g.login);
+print("Name: "+(g.name||"N/A"));
+print("Followers: "+g.followers);
+print("Public Repos: "+g.public_repos);
+print("Created: "+formatTime(g.created_at));
+print("Last Updated: "+formatTime(g.updated_at));
+print("Email: "+(g.commit_email||"N/A"));
+print("Profile: "+g.html_url);
+space();
 }
 
-}catch(err){
-print("Network error","error");
+/* ================= TIME ================= */
+
+function formatTime(date){
+if(!date) return "N/A";
+let d=new Date(date);
+let diff=(new Date()-d)/1000;
+
+if(diff>31536000) return d.toDateString()+" ("+Math.floor(diff/31536000)+" year ago)";
+if(diff>2592000) return d.toDateString()+" ("+Math.floor(diff/2592000)+" month ago)";
+if(diff>86400) return d.toDateString()+" ("+Math.floor(diff/86400)+" day ago)";
+if(diff>3600) return d.toDateString()+" ("+Math.floor(diff/3600)+" hour ago)";
+return d.toDateString()+" ("+Math.floor(diff/60)+" minute ago)";
 }
 
-});
 </script>
 
 </body>
