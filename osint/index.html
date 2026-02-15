@@ -93,17 +93,14 @@
         }
         .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-        .data-grid { display: grid; grid-template-columns: 100px 1fr; gap: 8px 15px; }
+        .data-grid { display: grid; grid-template-columns: 95px 1fr; gap: 8px 10px; }
         .label { color: var(--dim); font-weight: bold; font-size: 12px; }
         .val { color: var(--text); word-break: break-all; line-height: 1.5; }
         .v-blue { color: var(--accent); font-weight: bold; }
         .v-green { color: var(--green); font-weight: bold; }
 
-        .loc-sec { margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border); }
-        .loc-tag { color: var(--accent); font-size: 10px; font-weight: bold; margin-bottom: 8px; display: block; }
-
         .search-area {
-            padding: 20px;
+            padding: 15px;
             background: rgba(17, 17, 27, 0.95);
             border-top: 1px solid var(--border);
             flex-shrink: 0;
@@ -150,8 +147,8 @@
     </div>
 
     <div class="screen" id="screen">
-        <span class="v-green">--- M4Y4NKY OSINT V7.0 PRO ---</span><br>
-        <span style="color:var(--dim)">HTTPS Environment Detected. System ready.</span>
+        <span class="v-green">--- M4Y4NKY OSINT V7.2 ---</span><br>
+        <span style="color:var(--dim)">Direct Scrapers Active. Alt-Num Fixed.</span>
     </div>
 
     <div class="search-area">
@@ -195,40 +192,27 @@
             else if (cmd === "phone") await scanPhone(arg);
             else if (cmd === "telegram") await scanTelegram(arg);
         } catch (e) {
-            print(`<span style='color:var(--red)'><br>[!] Critical Error: ${e.message}</span>`);
+            print(`<span style='color:var(--red)'><br>[!] Error: ${e.message}</span>`);
         }
     }
 
     targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 
-    /* ================= GITHUB (ABBAS + DIRECT FALLBACK) ================= */
     async function scanGithub(user) {
-        print(`<span style="color:var(--dim)">[*] Initiating GitHub Dossier Scan...</span>`);
+        print(`<span style="color:var(--dim)">[*] Extracting GitHub Data...</span>`);
         let profile = null;
         let email = "Private";
 
-        // Try Abbas API First
         try {
-            const res = await fetch(`https://abbas-apis.vercel.app/api/github?username=${user}`);
-            const json = await res.json();
-            profile = json.data || json;
+            const res = await fetch(`https://api.github.com/users/${user}`);
+            profile = await res.json();
+            if (profile.message === "Not Found") return print("<span style='color:var(--red)'>[!] Error: User missing.</span>");
             if (profile.email) email = profile.email;
         } catch (e) {
-            print(`<span style="color:var(--yellow)">[*] Primary API blocked. Retrying with Direct Fallback...</span>`);
+            return print("<span style='color:var(--red)'>[!] API Failure. Check connection.</span>");
         }
 
-        // Direct GitHub Fallback
-        if (!profile || profile.message === "Not Found") {
-            try {
-                const fbRes = await fetch(`https://api.github.com/users/${user}`);
-                profile = await fbRes.json();
-                if (profile.message === "Not Found") return print("<span style='color:var(--red)'>[!] Error: Target missing from GitHub.</span>");
-            } catch (e) {
-                return print("<span style='color:var(--red)'>[!] Network Error: GitHub API unreachable.</span>");
-            }
-        }
-
-        // Deep Commit Scanner for Email
+        // Deep Scraper for Hidden Emails
         if (!email || email === "Private" || email === "null") {
             try {
                 const repoData = await fetch(`https://api.github.com/users/${user}/repos?sort=created&per_page=1`).then(r => r.json());
@@ -239,73 +223,71 @@
                         if (commitEmail && !commitEmail.includes("noreply")) email = commitEmail;
                     }
                 }
-            } catch (e) { /* silent fail for scraper */ }
+            } catch (e) {}
         }
 
         print(`<div class="intel-card">
             <span class="card-tag">GitHub Dossier</span>
             <div class="data-grid">
                 <span class="label">Target:</span><span class="val v-green">${profile.name || "N/A"}</span>
-                <span class="label">User:</span><span class="val">${profile.login || profile.username}</span>
+                <span class="label">User:</span><span class="val">${profile.login}</span>
                 <span class="label">Mail:</span><span class="val v-blue">${email}</span>
                 <span class="label">Repos:</span><span class="val">${profile.public_repos || 0}</span>
-                <span class="label">URL:</span><span class="val v-blue">${profile.html_url || profile.profile_url}</span>
+                <span class="label">URL:</span><span class="val v-blue">${profile.html_url}</span>
             </div>
         </div>`);
     }
 
-    /* ================= PHONE SCAN ================= */
     async function scanPhone(num) {
-        print(`<span style="color:var(--dim)">[*] Interrogating Database...</span>`);
+        print(`<span style="color:var(--dim)">[*] Querying Database...</span>`);
         try {
             const res = await fetch(`https://osint-backend-black.vercel.app/api/osint?type=phone&value=${num}`);
             const data = await res.json();
-            if (!data.status || !data.results.length) return print("<span style='color:var(--red)'>[!] No records found.</span>");
+            if (!data.status || !data.results.length) return print("<span style='color:var(--red)'>[!] No match found.</span>");
 
-            for (let p of data.results) {
+            data.results.forEach(p => {
                 let addr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, ", ").replace(/\s+/g, " ");
-                let html = `<div class="intel-card"><span class="card-tag">Database Match</span>
+                let html = `<div class="intel-card"><span class="card-tag">Match Found</span>
                     <div class="data-grid">
                         <span class="label">Full Name:</span><span class="val v-green">${p.name || "N/A"}</span>
                         <span class="label">Mobile:</span><span class="val v-blue">${p.mobile || "N/A"}</span>
+                        <span class="label">Alt Num:</span><span class="val v-blue">${p.alt || "N/A"}</span>
                         <span class="label">Email:</span><span class="val v-blue">${p.email || "N/A"}</span>
                         <span class="label">Address:</span><span class="val">${addr}</span>
-                    </div>`;
-
+                    </div></div>`;
+                print(html);
+                
                 const pin = addr.match(/\b\d{6}\b/);
                 if (pin) {
-                    const pinRes = await fetch(`https://api.postalpincode.in/pincode/${pin[0]}`).then(r => r.json());
-                    if (pinRes[0].Status === "Success") {
-                        const po = pinRes[0].PostOffice[0];
-                        html += `<div class="loc-sec"><span class="loc-tag">GEO-DATA (PIN: ${pin[0]})</span>
-                            <div class="data-grid">
-                                <span class="label">City:</span><span class="val v-blue">${po.Block}</span>
-                                <span class="label">District:</span><span class="val v-blue">${po.District}</span>
-                                <span class="label">State:</span><span class="val v-blue">${po.State}</span>
-                            </div></div>`;
-                    }
+                    fetch(`https://api.postalpincode.in/pincode/${pin[0]}`).then(r => r.json()).then(pinRes => {
+                        if (pinRes[0].Status === "Success") {
+                            const po = pinRes[0].PostOffice[0];
+                            print(`<div class="intel-card" style="margin-top:-20px"><span class="card-tag" style="color:var(--accent)">GEO-DATA</span>
+                                <div class="data-grid">
+                                    <span class="label">City:</span><span class="val v-blue">${po.Block}</span>
+                                    <span class="label">State:</span><span class="val v-blue">${po.State}</span>
+                                </div></div>`);
+                        }
+                    });
                 }
-                html += `</div>`;
-                print(html);
-            }
-        } catch (e) { print("<span style='color:var(--red)'>[!] Database Connectivity Failure.</span>"); }
+            });
+        } catch (e) { print("<span style='color:var(--red)'>[!] DB Connection Failure.</span>"); }
     }
 
-    /* ================= TELEGRAM SCAN ================= */
     async function scanTelegram(id) {
-        print(`<span style="color:var(--dim)">[*] Searching TG Archives...</span>`);
+        print(`<span style="color:var(--dim)">[*] Searching Archives...</span>`);
         try {
             const res = await fetch(`https://osint-backend-black.vercel.app/api/osint?type=telegram&value=${id}`);
             const d = await res.json();
             const tg = d?.data || d;
-            if(!tg?.id) return print("<span style='color:var(--red)'>[!] Telegram user missing.</span>");
+            if(!tg?.id) return print("<span style='color:var(--red)'>[!] User missing.</span>");
             print(`<div class="intel-card"><span class="card-tag">TG Intel</span>
                 <div class="data-grid">
-                    <span class="label">User ID:</span><span class="val v-blue">${tg.id}</span>
+                    <span class="label">ID:</span><span class="val v-blue">${tg.id}</span>
                     <span class="label">Name:</span><span class="val v-green">${tg.first_name || "N/A"}</span>
-                    <span class="label">Activity:</span><span class="val">${tg.total_msg_count || 0} msgs</span>
+                    <span class="label">Messages:</span><span class="val">${tg.total_msg_count || 0}</span>
                 </div></div>`);
-        } catch (e) { print("<span style='color:var(--red)'>[!] Telegram scan error.</span>"); }
+        } catch (e) { print("<span style='color:var(--red)'>[!] Scan error.</span>"); }
     }
 </script>
 </body>
