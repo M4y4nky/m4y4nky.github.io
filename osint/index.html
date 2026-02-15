@@ -60,7 +60,7 @@
         input { flex: 1; background: none; border: none; color: #fff; font-family: inherit; font-size: 15px; padding: 12px; width: 0; }
         .search-btn { background: var(--accent); color: #111; border: none; padding: 0 18px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; }
 
-        pre { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; font-size: 10px; white-space: pre-wrap; word-break: break-all; color: var(--text); border: 1px solid var(--border); }
+        pre { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; font-size: 11px; white-space: pre-wrap; word-break: break-all; color: var(--text); border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -76,11 +76,11 @@
             <div class="sys-info">
                 <div class="sys-item">CONNECTION: <span>SECURE</span></div>
                 <div class="sys-item">DATABASE: <span>ONLINE</span></div>
-                <div class="sys-item">PROXY: <span>ENABLED</span></div>
+                <div class="sys-item">PROXY: <span>STABLE</span></div>
                 <div class="sys-item">SESSION: <span id="uptime">0s</span></div>
             </div>
         </div>
-        <div id="logs" style="color:var(--dim); font-size: 11px;">Waiting for target uplink...</div>
+        <div id="logs" style="color:var(--dim); font-size: 11px;">System Initialized. Ready for uplink...</div>
     </div>
     <div class="search-area">
         <div class="input-wrapper">
@@ -89,7 +89,7 @@
                 <option value="github">GITHUB</option>
                 <option value="telegram">TELEGRAM</option>
             </select>
-            <input id="target" type="text" placeholder="Target ID..." autocomplete="off">
+            <input id="target" type="text" placeholder="Enter Target..." autocomplete="off">
             <button class="search-btn" onclick="startSearch()">SCAN</button>
         </div>
     </div>
@@ -106,7 +106,7 @@
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
 
-    // TERA ASLI BACKEND LINK
+    // TERA ASLI BACKEND VERCEL LINK
     const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
 
     function print(txt) {
@@ -125,11 +125,11 @@
         print(`<span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
-            // Simple fetch call jo pehle kaam kar rahi thi
+            // Simple fetch request jo stable hai
             const response = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
             const data = await response.json();
 
-            if (type === "phone" && data.results) {
+            if (type === "phone" && data.results && data.results.length > 0) {
                 data.results.forEach(p => {
                     print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
                         <div class="data-grid">
@@ -146,8 +146,7 @@
                 </div>`);
             }
         } catch (e) {
-            print(`<span style="color:var(--red)">[!] FETCH_FAILED: Check backend logs.</span>`);
-            console.error(e);
+            print(`<span style="color:var(--red)">[!] ERR: ${e.message}</span>`);
         }
     }
 
