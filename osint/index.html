@@ -2,50 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4Y4NKY'S OSINT V1.0 - Debug Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>M4Y4NKY'S OSINT V1.0</title>
     <style>
-        :root { --bg: #0b0d15; --accent: #89b4fa; --border: rgba(137, 180, 250, 0.2); --text: #cdd6f4; --red: #f38ba8; }
-        body { background: #000; color: var(--text); font-family: monospace; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .window { width: 95%; max-width: 500px; height: 90vh; border: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); border-radius: 10px; overflow: hidden; }
-        .screen { flex: 1; padding: 20px; overflow-y: auto; font-size: 12px; }
-        .search-area { padding: 15px; background: #11111b; border-top: 1px solid var(--border); display: flex; gap: 5px; }
-        input, select, button { background: #1e1e2e; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 5px; }
-        button { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; }
-        .log-entry { margin-bottom: 5px; border-left: 2px solid var(--dim); padding-left: 8px; }
-        .log-success { border-color: #a6e3a1; color: #a6e3a1; }
-        .log-error { border-color: var(--red); color: var(--red); }
+        :root {
+            --bg: #0b0d15; --glass: rgba(15, 17, 26, 0.98); --border: rgba(137, 180, 250, 0.2);
+            --accent: #89b4fa; --green: #a6e3a1; --dim: #6c7086; --text: #cdd6f4; --red: #f38ba8;
+        }
+        * { box-sizing: border-box; outline: none; }
+        body {
+            margin: 0; background: #000;
+            font-family: 'SF Mono', monospace;
+            display: flex; justify-content: center; align-items: center;
+            height: 100dvh; padding: 15px; overflow: hidden;
+        }
+        .window {
+            width: 100%; max-width: 500px; height: 100%;
+            background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 12px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 40px rgba(137, 180, 250, 0.1);
+        }
+        .title-bar {
+            height: 35px; background: rgba(17, 17, 27, 0.9);
+            display: flex; align-items: center; padding: 0 15px;
+            border-bottom: 1px solid var(--border); flex-shrink: 0;
+        }
+        .dots { display: flex; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .d-red { background: var(--red); } .d-yel { background: #fab387; } .d-grn { background: var(--green); }
+        .window-title { flex: 1; text-align: center; font-size: 10px; color: var(--dim); font-weight: bold; letter-spacing: 2px; }
+
+        .screen { flex: 1; padding: 20px; overflow-y: auto; scrollbar-width: none; color: var(--text); font-size: 13px; }
+        .screen::-webkit-scrollbar { display: none; }
+        
+        .brand { font-size: 20px; font-weight: 900; color: var(--accent); margin-bottom: 5px; }
+        .sys-info { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 15px 0; font-size: 10px; color: var(--dim); }
+        .sys-info span { color: var(--green); }
+
+        .intel-card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+            border-radius: 8px; padding: 15px; margin: 15px 0; animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .data-grid { display: grid; grid-template-columns: 90px 1fr; gap: 5px; }
+        .label { color: var(--dim); font-size: 11px; }
+        .val { color: var(--text); word-break: break-all; }
+
+        .search-area { padding: 15px; background: #11111b; border-top: 1px solid var(--border); }
+        .input-group { display: flex; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+        select { background: none; border: none; color: var(--accent); padding: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        input { flex: 1; background: none; border: none; color: #fff; padding: 12px; font-size: 14px; font-family: inherit; }
+        button { background: var(--accent); color: #111; border: none; padding: 0 20px; font-weight: bold; cursor: pointer; }
+
+        pre { background: #000; padding: 10px; border-radius: 5px; font-size: 11px; color: var(--green); border: 1px solid var(--border); overflow-x: auto; }
     </style>
 </head>
 <body>
 <div class="window">
+    <div class="title-bar">
+        <div class="dots"><div class="dot d-red"></div><div class="dot d-yel"></div><div class="dot d-grn"></div></div>
+        <div class="window-title">TERMINAL@M4Y4NKY</div>
+    </div>
     <div class="screen" id="screen">
-        <div style="color:var(--accent); font-weight:bold;">M4Y4NKY'S OSINT [DEBUG_ENABLED]</div>
-        <div id="debug-status" style="font-size:10px; color:gray;">System logs will appear here...</div>
-        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+        <div class="brand">M4Y4NKY'S <span style="background:var(--accent);color:#111;padding:0 5px;border-radius:3px;font-size:12px">OSINT V1.0</span></div>
+        <div class="sys-info">
+            <div>STATUS: <span>ONLINE</span></div>
+            <div>UPLINK: <span>ENCRYPTED</span></div>
+            <div>API: <span>VERCEL_v2</span></div>
+            <div>SESSION: <span id="timer">0s</span></div>
+        </div>
+        <div style="color:var(--dim); font-size:11px; margin-bottom:10px;">[System] Waiting for target identification...</div>
     </div>
     <div class="search-area">
-        <select id="module">
-            <option value="phone">PHONE</option>
-            <option value="github">GITHUB</option>
-            <option value="telegram">TELEGRAM</option>
-        </select>
-        <input id="target" type="text" placeholder="Target ID...">
-        <button onclick="startSearch()">SCAN</button>
+        <div class="input-group">
+            <select id="module">
+                <option value="phone">PHONE</option>
+                <option value="github">GITHUB</option>
+                <option value="telegram">TELEGRAM</option>
+                <option value="pincode">PINCODE</option>
+            </select>
+            <input id="target" type="text" placeholder="Target ID..." autocomplete="off">
+            <button onclick="startSearch()">SCAN</button>
+        </div>
     </div>
 </div>
 
 <script>
+    let sec = 0; setInterval(() => { document.getElementById('timer').innerText = ++sec + 's'; }, 1000);
     const screen = document.getElementById("screen");
-    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
+    const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint"; //
 
-    function log(msg, type = '') {
+    function print(html) {
         const div = document.createElement("div");
-        div.className = `log-entry ${type}`;
-        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        div.innerHTML = html;
         screen.appendChild(div);
         screen.scrollTop = screen.scrollHeight;
-        console.log(`[OSINT_LOG]: ${msg}`);
     }
 
     async function startSearch() {
@@ -53,31 +106,30 @@
         const value = document.getElementById("target").value.trim();
         if(!value) return;
 
-        log(`Initiating uplink for ${type.toUpperCase()}: ${value}...`);
+        print(`<div style="color:var(--accent);margin-top:15px">[EXEC] scanning --${type} ${value}...</div>`);
 
         try {
-            log(`Fetching from: ${PROXY_URL}?type=${type}&value=${value}`);
-            
-            const startTime = performance.now();
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
-            const duration = (performance.now() - startTime).toFixed(2);
-
-            log(`Response received in ${duration}ms. Status: ${res.status}`);
-
+            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`); //
             const data = await res.json();
 
-            if (res.ok) {
-                log(`Data parsed successfully.`, 'log-success');
-                screen.innerHTML += `<pre style="background:rgba(255,255,255,0.05); padding:10px; font-size:11px;">${JSON.stringify(data, null, 2)}</pre>`;
+            if(type === 'phone' && data.status === 'success') {
+                print(`<div class="intel-card">
+                    <div style="color:var(--accent);font-size:10px;margin-bottom:8px">IDENTITY_FOUND</div>
+                    <div class="data-grid">
+                        <span class="label">Name:</span><span class="val" style="color:var(--green)">${data.name || 'N/A'}</span>
+                        <span class="label">Carrier:</span><span class="val">${data.carrier || 'N/A'}</span>
+                        <span class="label">Circle:</span><span class="val">${data.circle || 'N/A'}</span>
+                    </div>
+                </div>`);
             } else {
-                log(`Server returned error: ${data.message || 'Unknown Error'}`, 'log-error');
-                screen.innerHTML += `<div class="log-error">Detail: ${JSON.stringify(data)}</div>`;
+                print(`<div class="intel-card"><pre>${JSON.stringify(data, null, 2)}</pre></div>`);
             }
         } catch (e) {
-            log(`CRITICAL FETCH ERROR: ${e.message}`, 'log-error');
-            log(`Possible reasons: CORS, Backend Offline, or Network Timeout.`);
+            print(`<div style="color:var(--red);margin-top:10px">[!] ERR: Connection to backend severed.</div>`);
         }
     }
+
+    document.getElementById("target").addEventListener("keypress", (e) => { if(e.key === "Enter") startSearch(); });
 </script>
 </body>
 </html>
