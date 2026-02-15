@@ -50,8 +50,7 @@
         }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .card-tag { color: var(--accent); font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
-        .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .data-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; }
+        .data-grid { display: grid; grid-template-columns: 100px 1fr; gap: 6px 10px; }
         .label { color: var(--dim); font-size: 11px; }
         .val { color: var(--text); word-break: break-all; line-height: 1.4; }
 
@@ -61,8 +60,7 @@
         input { flex: 1; background: none; border: none; color: #fff; font-family: inherit; font-size: 15px; padding: 12px; width: 0; }
         .search-btn { background: var(--accent); color: #111; border: none; padding: 0 18px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; }
 
-        .toggle-btn { margin-top: 12px; background: none; border: 1px solid var(--dim); color: var(--dim); font-size: 9px; padding: 4px 8px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: inherit; }
-        .json-raw-box { font-size: 10px; color: var(--dim); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed var(--border); white-space: pre-wrap; display: none; }
+        pre { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; font-size: 10px; white-space: pre-wrap; word-break: break-all; color: var(--text); border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -78,21 +76,20 @@
             <div class="sys-info">
                 <div class="sys-item">CONNECTION: <span>SECURE</span></div>
                 <div class="sys-item">DATABASE: <span>ONLINE</span></div>
-                <div class="sys-item">PROXY: <span>BYPASS</span></div>
+                <div class="sys-item">PROXY: <span>ENABLED</span></div>
                 <div class="sys-item">SESSION: <span id="uptime">0s</span></div>
             </div>
         </div>
-        <div style="color:var(--accent); font-size: 11px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 10px;">[ SYSTEM LOGS ]</div>
-        <div style="color:var(--dim); font-size: 11px;">Waiting for target uplink...</div>
+        <div id="logs" style="color:var(--dim); font-size: 11px;">Waiting for target uplink...</div>
     </div>
     <div class="search-area">
         <div class="input-wrapper">
-            <select id="module" onchange="updateUI()">
+            <select id="module">
                 <option value="phone">PHONE</option>
                 <option value="github">GITHUB</option>
                 <option value="telegram">TELEGRAM</option>
             </select>
-            <input id="target" type="text" placeholder="Enter 10-digit number..." maxlength="10" inputmode="numeric" oninput="validateInput(this)">
+            <input id="target" type="text" placeholder="Target ID..." autocomplete="off">
             <button class="search-btn" onclick="startSearch()">SCAN</button>
         </div>
     </div>
@@ -109,39 +106,31 @@
     const targetInput = document.getElementById("target");
     const moduleSelect = document.getElementById("module");
 
-    // YAHAN APNA VERCEL BACKEND URL DALO
+    // TERA ASLI BACKEND LINK
     const PROXY_URL = "https://osint-backend-black.vercel.app/api/osint";
 
-    function validateInput(el) { if (moduleSelect.value === "phone") { el.value = el.value.replace(/[^0-9]/g, ''); } }
-    function updateUI() {
-        targetInput.value = ""; const type = moduleSelect.value;
-        if (type === "phone") { targetInput.placeholder = "Enter 10-digit number..."; targetInput.maxLength = 10; targetInput.inputmode = "numeric"; }
-        else { targetInput.placeholder = (type === "github" ? "GitHub Username..." : "Telegram User ID..."); targetInput.maxLength = 40; targetInput.inputmode = "text"; }
+    function print(txt) {
+        const div = document.createElement("div");
+        div.style.marginTop = "10px";
+        div.innerHTML = txt;
+        screen.appendChild(div);
+        screen.scrollTop = screen.scrollHeight;
     }
 
-    function print(txt) { const div = document.createElement("div"); div.innerHTML = txt; screen.appendChild(div); screen.scrollTop = screen.scrollHeight; }
-    function toggleJson(id) { const box = document.getElementById(id); box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none"; }
-
-    const getDetailedTime = (dateStr) => {
-        if(!dateStr) return "N/A";
-        const date = new Date(dateStr), now = new Date(), diff = Math.abs(now - date);
-        const daysT = Math.floor(diff / (1000 * 60 * 60 * 24)), yrs = Math.floor(daysT / 365);
-        return yrs > 0 ? `${yrs}y ago` : `${daysT}d ago`;
-    };
-
     async function startSearch() {
-        const type = moduleSelect.value, value = targetInput.value.trim();
+        const type = moduleSelect.value;
+        const value = targetInput.value.trim();
         if (!value) return;
-        targetInput.value = ""; 
-        print(`<br><span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
+
+        print(`<span style="color:var(--accent)">[EXEC]</span> uplink --search ${type} --id ${value}`);
 
         try {
-            const res = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
-            let data = await res.json();
+            // Simple fetch call jo pehle kaam kar rahi thi
+            const response = await fetch(`${PROXY_URL}?type=${type}&value=${value}`);
+            const data = await response.json();
 
             if (type === "phone" && data.results) {
-                data.results.forEach((p, i) => {
-                    const boxId = `json_${Date.now()}_${i}`;
+                data.results.forEach(p => {
                     print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
                         <div class="data-grid">
                             <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
@@ -149,18 +138,19 @@
                             <span class="label">Circle:</span><span class="val">${p.circle || "N/A"}</span>
                             <span class="label">Address:</span><span class="val">${p.address || "N/A"}</span>
                         </div>
-                        <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
-                        <div class="json-raw-box" id="${boxId}">${JSON.stringify(p, null, 2)}</div>
                     </div>`);
                 });
             } else {
-                const boxId = `json_${Date.now()}`;
-                print(`<div class="intel-card"><span class="card-tag">${type.toUpperCase()} Intelligence</span>
-                    <pre style="font-size:10px; color:var(--text)">${JSON.stringify(data, null, 2)}</pre>
+                print(`<div class="intel-card"><span class="card-tag">Intelligence Data</span>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
                 </div>`);
             }
-        } catch (e) { print(`<span style='color:var(--red)'><br>[!] ERR: ${e.message}</span>`); }
+        } catch (e) {
+            print(`<span style="color:var(--red)">[!] FETCH_FAILED: Check backend logs.</span>`);
+            console.error(e);
+        }
     }
+
     targetInput.addEventListener("keydown", (e) => { if (e.key === "Enter") startSearch(); });
 </script>
 </body>
