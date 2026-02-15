@@ -47,11 +47,12 @@
         .intel-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
             border-radius: 10px; padding: 16px; margin: 15px 0; animation: slideUp 0.3s ease-out;
+            width: 100%;
         }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .card-tag { color: var(--accent); font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
         .card-tag::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .data-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; }
+        .data-grid { display: grid; grid-template-columns: 120px 1fr; gap: 6px 10px; }
         .label { color: var(--dim); font-size: 11px; }
         .val { color: var(--text); word-break: break-all; line-height: 1.4; }
 
@@ -62,7 +63,11 @@
         .search-btn { background: var(--accent); color: #111; border: none; padding: 0 18px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; }
 
         .toggle-btn { margin-top: 12px; background: none; border: 1px solid var(--dim); color: var(--dim); font-size: 9px; padding: 4px 8px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: inherit; }
-        .json-raw-box { font-size: 10px; color: var(--dim); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed var(--border); white-space: pre-wrap; display: none; }
+        .json-raw-box { 
+            font-size: 10px; color: var(--dim); background: rgba(0,0,0,0.3); padding: 10px; 
+            border-radius: 6px; margin-top: 10px; border: 1px dashed var(--border); 
+            white-space: pre-wrap; display: none; overflow-x: auto; max-width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -155,13 +160,11 @@
                 if (!data || !data.results || data.results.length === 0) throw new Error("Target_Not_Found");
                 data.results.forEach((p, i) => {
                     const innerBoxId = `json_ph_${Date.now()}_${i}`;
-                    let cleanAddr = (p.address || "N/A").replace(/!!/g, ", ").replace(/!/g, " ").replace(/\s+/g, " ");
                     print(`<div class="intel-card"><span class="card-tag">Identity Profile</span>
                         <div class="data-grid">
                             <span class="label">Name:</span><span class="val" style="color:var(--green)">${p.name || "N/A"}</span>
                             <span class="label">Target:</span><span class="val" style="color:var(--accent)">${p.mobile || "N/A"}</span>
                             <span class="label">Circle:</span><span class="val">${p.circle || "N/A"}</span>
-                            <span class="label">Address:</span><span class="val">${cleanAddr}</span>
                         </div>
                         <button class="toggle-btn" onclick="toggleJson('${innerBoxId}')">toggle_raw</button>
                         <div class="json-raw-box" id="${innerBoxId}">${JSON.stringify(p, null, 2)}</div>
@@ -185,20 +188,22 @@
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(data, null, 2)}</div>
                 </div>`);
             } else if (type === "telegram") {
-                // TERA UPDATED TELEGRAM LOGIC WITH BOT & ACTIVE STATUS
+                // FIXED TELEGRAM INTEL DISPLAY
                 if (!data || !data.data || !data.data.data) throw new Error("Telegram_Uplink_Failed");
                 const tg = data.data.data;
-                const accountAge = tg.first_msg_date ? new Date(tg.first_msg_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : "N/A";
-
                 print(`<div class="intel-card"><span class="card-tag">Telegram Deep Intel</span>
                     <div class="data-grid">
                         <span class="label">UID:</span><span class="val v-blue">${tg.id || "N/A"}</span>
                         <span class="label">Identity:</span><span class="val" style="color:var(--green)">${tg.first_name || "N/A"}</span>
-                        <span class="label">Is Bot:</span><span class="val" style="color:${tg.is_bot ? 'var(--red)' : 'var(--green)'}">${tg.is_bot ? 'YES [!] ' : 'NO'}</span>
+                        <span class="label">Is Bot:</span><span class="val" style="color:${tg.is_bot ? 'var(--red)' : 'var(--green)'}">${tg.is_bot ? 'YES [!]' : 'NO'}</span>
                         <span class="label">Status:</span><span class="val" style="color:${tg.is_active ? 'var(--green)' : 'var(--red)'}">${tg.is_active ? '● ACTIVE' : '○ INACTIVE'}</span>
+                        <span class="label">Names Log:</span><span class="val">${tg.names_count || 1} records found</span>
+                        <span class="label">Username Log:</span><span class="val">${tg.usernames_count || 0} recorded IDs</span>
                         <span class="label">Msgs Trace:</span><span class="val v-blue">${tg.total_msg_count?.toLocaleString() || 0}</span>
+                        <span class="label">Groups Intel:</span><span class="val">${tg.total_groups || 0} (Admin: ${tg.adm_in_groups || 0})</span>
+                        <span class="label">Group Activity:</span><span class="val">${tg.msg_in_groups_count || 0} messages</span>
                         <span class="label">Account Age:</span><span class="val v-dim">${getDetailedTime(tg.first_msg_date)}</span>
-                        <span class="label">Last Seen:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
+                        <span class="label">Last Pulse:</span><span class="val v-dim">${getDetailedTime(tg.last_msg_date)}</span>
                     </div>
                     <button class="toggle-btn" onclick="toggleJson('${boxId}')">toggle_raw</button>
                     <div class="json-raw-box" id="${boxId}">${JSON.stringify(tg, null, 2)}</div>
