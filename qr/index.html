@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="page">
+    <section class="card">
+      <h1>QR Code Generator</h1>
+      <p class="subtitle">Instant, simple and free</p>
+
+      <input id="text" placeholder="Enter text or URL" />
+
+      <div id="qr"></div>
+
+      <button id="download">Download PNG</button>
+
+      <p class="privacy">
+        Generated locally. No data stored.
+      </p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

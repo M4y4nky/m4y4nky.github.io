@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>m4y4nky_system_log</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* =========================
+           THEME VARIABLES
+        ========================= */
+
+        :root {
+            --bg-color: #0c0c0c;
+            --win-bg: #000;
+            --text-main: #ffffff;
+            --text-gray: #cccccc;
+            --text-dim: #555555;
+            --header-bg: #1a1a1a;
+            --border-color: #333333;
+            --cmd-color: #00ff41;
+        }
+
+        body.light-mode {
+            --bg-color: #f0f0f0;
+            --win-bg: #ffffff;
+            --text-main: #000000;
+            --text-gray: #444444;
+            --text-dim: #999999;
+            --header-bg: #e5e5e5;
+            --border-color: #cccccc;
+            --cmd-color: #0a7a2c;
+        }
+
+        /* =========================
+           BASE STYLES
+        ========================= */
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        .terminal-window {
+            background-color: var(--win-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+
+        .terminal-header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 15px;
+        }
+
+        /* =========================
+           UTILITIES
+        ========================= */
+
+        .text-main { color: var(--text-main); }
+        .text-gray { color: var(--text-gray); }
+        .text-dim  { color: var(--text-dim); }
+
+        .cmd::before {
+            content: "m4y4nky@system:~$ ";
+            color: var(--cmd-color);
+        }
+
+        .device-row {
+            display: flex;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .year {
+            width: 110px;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .device {
+            color: var(--text-gray);
+        }
+
+        .active .device {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .perm-code {
+            color: var(--text-dim);
+            margin-right: 14px;
+            font-size: 0.8rem;
+        }
+
+        .social-link {
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .social-link:hover {
+            color: var(--cmd-color);
+            text-decoration: underline;
+        }
+
+        #theme-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        @media (max-width: 640px) {
+            .device-row { flex-direction: column; }
+            .year { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-12 lg:p-20 flex items-center justify-center min-h-screen">
+
+    <div class="terminal-window w-full max-w-4xl rounded-lg overflow-hidden">
+        
+        <!-- Header -->
+        <div class="terminal-header flex items-center justify-between">
+            <div class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+            </div>
+
+            <div class="text-[10px] text-dim tracking-widest uppercase">
+                m4y4nky.in
+            </div>
+
+            <div id="theme-toggle" class="text-xs">☀️</div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 md:p-10 text-sm md:text-base">
+
+            <!-- Intro -->
+            <div class="mb-8">
+                <p class="text-xs italic text-dim">
+                    Last login: <span id="current-time"></span> on ttys001
+                </p>
+
+                <div class="mt-4">
+                    <h1 class="text-3xl md:text-5xl text-main tracking-tight">
+                        M4y4nky
+                    </h1>
+                    <p class="text-gray mt-1 uppercase text-xs tracking-widest">
+                        Hardware Specialist | Desktop Support Engineer
+                    </p>
+                </div>
+            </div>
+
+            <!-- Whoami -->
+            <div class="mb-8">
+                <p class="cmd">whoami</p>
+                <p class="mt-2 text-gray">
+                    A tech-focused professional specializing in system optimization,
+                    hardware diagnostics, and the Android open-source ecosystem.
+                </p>
+            </div>
+
+            <!-- Social -->
+            <div class="mb-8">
+                <p class="cmd">ls -la /social</p>
+                <div class="mt-2 space-y-1 text-xs md:text-sm">
+                    <p><span class="perm-code">drwxr-xr-x</span><a class="social-link" href="https://github.com/M4y4nky">github.com/M4y4nky</a></p>
+                    <p><span class="perm-code">drwxr-xr-x</span><a class="social-link" href="https://twitter.com/M4y4nky">twitter.com/M4y4nky</a></p>
+                    <p><span class="perm-code">drwxr-xr-x</span><a class="social-link" href="https://t.me/M4y4nky">t.me/M4y4nky</a></p>
+                    <p><span class="perm-code">drwxr-xr-x</span><a class="social-link" href="https://instagram.com/M4y4nky">instagram.com/M4y4nky</a></p>
+                </div>
+            </div>
+
+            <!-- Hardware -->
+            <div class="mb-8">
+                <p class="cmd">cat hardware_history.log</p>
+
+                <div class="mt-4 border-t" style="border-color: var(--border-color)">
+                    <div class="device-row active"><span class="year">2025–26</span><span class="device">OnePlus 13</span></div>
+                    <div class="device-row"><span class="year">2025</span><span class="device">OnePlus Nord 5</span></div>
+                    <div class="device-row"><span class="year">2025</span><span class="device">Nothing Phone (3a)</span></div>
+                    <div class="device-row"><span class="year">2024</span><span class="device">CMF Phone 1</span></div>
+                    <div class="device-row"><span class="year">2024</span><span class="device">Poco F5</span></div>
+                    <div class="device-row"><span class="year">2021–23</span><span class="device">Redmi Note 10 Pro</span></div>
+                    <div class="device-row"><span class="year">2020</span><span class="device">POCO X2</span></div>
+                    <div class="device-row"><span class="year">2019</span><span class="device">Redmi Note 5 Pro</span></div>
+                    <div class="device-row"><span class="year">2017–18</span><span class="device">Samsung Galaxy A8 & J2</span></div>
+                    <div class="device-row"><span class="year">2016</span><span class="device">LYF LS-4005</span></div>
+                    <div class="device-row"><span class="year">2016</span><span class="device">Lava Iris X5</span></div>
+                </div>
+            </div>
+
+            <!-- Cursor -->
+            <div class="flex items-center">
+                <span class="cmd"></span>
+                <span class="inline-block w-2 h-5 ml-1 animate-pulse" style="background: var(--cmd-color)"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const opts = {
+                weekday: 'short',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            document.getElementById('current-time').innerText =
+                now.toLocaleString('en-US', opts);
+        }
+        updateTime();
+
+        const toggle = document.getElementById('theme-toggle');
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            toggle.innerText = document.body.classList.contains('light-mode') ? '🌙' : '☀️';
+        });
+    </script>
+
+</body>
+</html>
